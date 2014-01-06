@@ -81,7 +81,7 @@ sub setInfoNode {
 # setNodeclusterRelation($string, bool($simple), bool($full))
 # Création des variables pour le fichier .gv
 # global var : %Hsched %Hcluster $relation $mainColor
-# option var : $jobs $maxSoloCol
+# option var : $jobs
 # return	(void) 
 sub setNodeclusterRelation {
 	my ($dirName, $simple, $full) =	@_;
@@ -136,8 +136,8 @@ sub setNodeclusterRelation {
 		# node
 		$node  = "\"$sched\""	;
 		$node .= $nodeHead		;
-		$node .= (( -e "$dirName/Jobstream/$sched.txt" ) 
-								? " TITLE=\"$sched\n\n\n$sched\" HREF=\"./Jobstream/$sched.txt\" >" 
+		$node .= (( -e "_ordinogramme/$dirName/Jobstream/$sched.txt" ) 
+								? " TITLE=\"$sched\" HREF=\"./Jobstream/$sched.txt\" >" 
 								: " >") ;	
 
 		# node : cell Shed

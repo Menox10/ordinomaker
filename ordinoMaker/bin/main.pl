@@ -90,15 +90,16 @@ open $fh_source, '<:encoding(cp1252)', "_file_definition/$source_file" or die $!
 ################################################################################
 #  Supp et creation repertorie de travail
 print "-> Suppr & Creation du repertoire : \"$dirName\"\n";
-rmtree("$dirName", 0, 1);
+rmtree("_ordinogramme/$dirName", 0, 1);
 sleep 1;
-mkpath("$dirName/Jobstream",0, 0775 ); 
+mkpath("_ordinogramme/$dirName/Jobstream",0, 0775 );
+
 ################################################################################
 # Création des fichiers sous CPU/Jobstream/*
 # Split du fichier source en 1 fichier par schdule
 print "\n-> Decoupe du fichier source $source_file\n";
 $i = 0;
-open $fh_schedule, '>:encoding(utf-8)', "$dirName/Jobstream/$fichier_resultat" or die $!;
+open $fh_schedule, '>:encoding(utf-8)', "_ordinogramme/$dirName/Jobstream/$fichier_resultat" or die $!;
 
 while ( my $line = <$fh_source> ) {
 	next if ( $line =~ m/^$/ );
@@ -120,10 +121,10 @@ while ( my $line = <$fh_source> ) {
 		$fichier_resultat = "$schedName.txt";
 		# print "$schedName.txt\n";
 
-		if  ( -e "$dirName/Jobstream/$fichier_resultat" ) {
+		if  ( -e "_ordinogramme/$dirName/Jobstream/$fichier_resultat" ) {
 			print "Err   $schedName : Declare plusieurs fois !\n";
 		}
-		open $fh_schedule, '>:encoding(utf-8)', "$dirName/Jobstream/$fichier_resultat" or die $!;
+		open $fh_schedule, '>:encoding(utf-8)', "_ordinogramme/$dirName/Jobstream/$fichier_resultat" or die $!;
 		# print "Creation : \"$fichier_resultat\"\n";
 	}
 	$line =~ s/^\s+|\s+$//g;
@@ -140,19 +141,21 @@ setConvertFreq("ordinoMaker/etc/convertFreq.conf");
 
 ################################################################################
 # MAIN FILE : Ajout dans %Hsched
-setSchedFiles($cpuName, "$dirName/Jobstream");
+setSchedFiles($cpuName, "_ordinogramme/$dirName/Jobstream");
 
 ################################################################################
-# calcul maxSoloCol
-if ( $maxSoloCol eq "auto" ) {
-	my $count = keys %Hsched;
-	$maxSoloCol = int($count/9);
-	if ( $maxSoloCol < 6 ) { $maxSoloCol = 6 };
-} else {
-	if ( $maxSoloCol < 6 || $maxSoloCol > 99 ) { 
-		die "\$maxSoloCol=$maxSoloCol : valeur innattendu !";
-	}
+# maxSoloCol
+# 1 =< maxSoloCol >= 99 
+if ( $maxSoloCol < 1 || $maxSoloCol > 99 ) { 
+	die "\$maxSoloCol=$maxSoloCol : valeur innattendu !";
 }
+# $count = Nombre de  Jobstream dans %Hsched
+my $count = keys %Hsched;
+
+# Calcul de maxSoloCol courant
+$maxSoloCol = int($count/$maxSoloCol);
+if ( $maxSoloCol < 6 ) { $maxSoloCol = 6 };
+
 print "\n-> Alignement vertical des noeuds solo : $maxSoloCol (maxSoloCol)\n";
 
 ################################################################################
@@ -174,7 +177,7 @@ setLinks();
 if ( -e "_file_definition/$jobs_file" ) {
 	print "\n-> Prise en compte fichier jobs \"$jobs_file\"\n";
 	setJobsHash("_file_definition/$jobs_file");
-	writeJobsInSched("$dirName/Jobstream");
+	writeJobsInSched("_ordinogramme/$dirName/Jobstream");
 	setLinkAfter();
 }
 
@@ -199,7 +202,7 @@ print "\tcomplet  : ${dirName}_complet.gv\n";
 ################################################################################
 # Création du .xls file
 my $log;
-$log = makeXlsFile("$dirName/$dirName.xls", $dirName);
+$log = makeXlsFile("_ordinogramme/$dirName/$dirName.xls", $dirName);
 print "\n-> Creation du fichier $dirName.xls : $log";
 print "\n";
 
