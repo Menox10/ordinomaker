@@ -29,6 +29,7 @@ SET Server=
 SET Env=
 
 SET composer=/opt/IBM/TWA/TWS/bin/composer
+SET hostname=/usr/bin/hostname
 SET desk="%HOMEDRIVE%%HOMEPATH%\Bureau"
 
 if "%CPU%"=="" (
@@ -46,6 +47,15 @@ REM VPN
 ping -w 100 -n 1 172.26.1.90 > NUL
 IF NOT "%ERRORLEVEL%"=="0" (
 	echo VPN : Aucune Connexion !
+	GOTO :END
+) ELSE (
+	echo VPN : Connexion OK
+)
+
+REM Init
+echo y | plink.exe -pw %rpw% %ruser%@%rserver% "echo Ref : $(%hostname%)"
+IF NOT "%ERRORLEVEL%"=="0" (
+	echo Probleme de connexion avec le serveur Ref
 	GOTO :END
 )
 
@@ -67,8 +77,8 @@ if "%Server%"=="" (
 	GOTO :END
 )
 
-echo Environnement : %Env%
-echo Server        : %Server%
+echo Env : %Env%
+echo TWS : %Server%
 
 SET Fsched=%CPU%_%Env%.txt
 SET Fjobs=%CPU%_%Env%_jobs.txt
