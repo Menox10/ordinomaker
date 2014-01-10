@@ -29,7 +29,7 @@ SET Server=
 SET Env=
 
 SET composer=/opt/IBM/TWA/TWS/bin/composer
-SET desk="%HOMEPATH%\Bureau"
+SET desk="%HOMEDRIVE%%HOMEPATH%\Bureau"
 
 if "%CPU%"=="" (
 	echo Usage :
@@ -37,8 +37,10 @@ if "%CPU%"=="" (
 	GOTO :END
 )
 
-REM ############################################################################
 echo --------------------
+echo Bureau ^= %desk%
+
+REM ############################################################################
 :getEnv
 REM VPN
 ping -w 100 -n 1 172.26.1.90 > NUL
