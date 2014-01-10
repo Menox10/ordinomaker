@@ -10,8 +10,16 @@ use strict;
 no warnings;
 require("./ordinoMaker/lib/lib_regexp.pl");
 
-# Varibale
+open(STDERR,'>/dev/null') or die $! ;
 
+# Caught control c
+$SIG{INT} = \&interrupt;
+sub interrupt {
+    print STDIN "Caught a control c!\n";
+    exit 2;
+}
+
+# Varibale
 my ($i, $j) = (1, 13);
 my (%Hselect, %Hopt);
 my @errorName;
@@ -19,6 +27,7 @@ my $choix;
 my $JFExt				= "_jobs.txt";
 my $docName	 		= "Guilde Rapide d'Utilisation";
 my $docPath 		= "ordinoMaker/doc/UserGuide.doc";
+my $getTwsFile	= 'ordinoMaker\bin\getTWSFile.cmd';
 
 open my $fh_setCpu, '>:encoding(cp1252)', "ordinoMaker/tmp/choixcpu.cmd" or die $!;
 opendir (DIR, "./_file_definition") or die $!;
@@ -59,19 +68,41 @@ sub getSelect {
 		foreach (@errorName) {
 			print " x - $_  => Nom incorrect (carc. alphanumerique uniquement)\n";
 		}
-		print "\n  0 - Consulter le \"" . $docName . "\"\n";
-		print "\n q/Q - Quit";
+		print "\n";
+		print "   0 - Consulter le \"" . $docName . "\"\n";
+		print " f/F - Recuperer fic. CPU (sur votre bureau)\n";
+		print " r/R - Refresh\n";
+		print " q/Q - Quit\n";
 		$j = 0 ;
 		--$i;
 	}
 	
-	print "\nChoix [0-" . $i . "] : ";
+	print "\nChoix [0-" . $i . "][f/r/q] : ";
 	$choix = <STDIN>;
 	$choix = RegExpMain($choix);
 	
 	# Sortie
-	if ( "$choix" eq "Q" || "$choix" eq "q" ) { print "\nSortie\n" ; exit 1}
+	if ( "$choix" eq "Q" || "$choix" eq "q" ) { exit 1 }
+	if ( "$choix" eq "R" || "$choix" eq "r" ) { exit 2 }
 	# Ouverture de $docPath si $choix = 0
+	if ( "$choix" eq "0" ) {
+		print "Ouverture de : " . $docName ;
+		system("CALL \"$docPath\"");
+		getSelect() ; 
+	}
+	if ( "$choix" eq "f" || "$choix" eq "F" ) {
+		print "Quelle CPU ? : ";
+		my $cpu = <STDIN>;
+		$cpu = RegExpMain($cpu);
+		if ( $cpu =~ m/\s|\W/ ) {
+			print "$cpu : non incorrect !"
+		} else {
+			system("$getTwsFile $cpu");
+		}
+		getSelect() ;
+		print "\n";
+	}
+	
 	if ( "$choix" eq "0" ) {
 		print "Ouverture de : " . $docName ;
 		system("CALL \"$docPath\"");		getSelect() ; 
@@ -91,9 +122,10 @@ sub getSelect {
 ########
 # Main #
 ########
-print "Launcher v3\n\n";
+print "Launcher v4\n\n";
 my ($cpu , $params) = getSelect();
 # ecrit dans le fichier fh_setCpu la CPU
 print {$fh_setCpu} "SET CPU=$cpu\n";
 
-close $fh_setCpu;
+close(STDERR) or die $! ;
+close $fh_setCpu or die $! ;;

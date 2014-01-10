@@ -153,7 +153,11 @@ sub setNodeclusterRelation {
 			#											$sched,	$param	  		,$size						,$b, $align  	, $bgcolor
 				$node .= 	setInNode($sched, "DESCRIPTION"	,"$ref_size->[0]" ,1,  "left"		, 0						);
 				$node .= 	setInNode($sched, "EVERY"				,"$ref_size->[1]" ,1,  "center"	, "yellow"		);
+		}
+		
 				$node .= 	setInNode($sched, "ON"					,"$ref_size->[3]" ,1,  "center"	, 0						);
+				
+		if ( ! $simple ) {
 				$node .= 	setInNode($sched, "EXCEPT"			,"$ref_size->[2]" ,0,  "left"		, 0						);
 				$node .= 	setInNode($sched, "AT"					,"$ref_size->[2]" ,0,  "left"		, 0						);
 				$node .= 	setInNode($sched, "NEEDS"				,"$ref_size->[1]" ,1,  "center"	, "orange"		);
@@ -186,7 +190,7 @@ sub setNodeclusterRelation {
 sub setClusterColor {
 	my $countColor = 0 ;
 
-	for my $cl (keys %Hcluster) {
+	for my $cl (sort keys %Hcluster) {
 		if ( $cl eq "_MAIN" || $cl eq "_INFO_" ) {
 			$Hcluster{$cl}{'BGCOLOR'} = $mainColor;
 		} else {
@@ -264,7 +268,7 @@ sub writeVgFile {
 	if ( $linkAfter		)		{ print {$fh_vg} $linkAfter			}
 	if ( $linkSolo		)		{ print {$fh_vg} $linkSolo			}
 	if ( $linkInfo		)		{ print {$fh_vg} $linkInfo			}
-	
+
 	# fin de fichier
 	print {$fh_vg}  "\n}\n";
 

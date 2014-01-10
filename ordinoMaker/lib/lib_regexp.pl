@@ -49,17 +49,16 @@ sub RegExpNeeds {
 	return "$line";
 }
 
+# gobal var :cpuName
 sub RegExpFollows {
 	my ($line,$cpu) = @_ ;
-	# print "\tRegExpFollows " . $line . "|" . $cpu . "\n";
-	$line =~ s/^FOLLOWS\b//;
-	$line =~ s/.@//;
-	$line =~ s/\.[0-9,a-z,A-Z]+$//;
+	
+	$line =~ s/\..*\s|\.@\s?/ /;
+	$line =~ s/FOLLOWS\b\s//;
+	$line =~ s/\s.*$//;
+	$line =~ s/$cpuName\#//;
 	$line = RegExpMain("$line");
 	$line = uc($line);
-
-	my @splitfollows = split('#', $line);
- 	if ( $cpu eq $splitfollows[0] ) { $line = $splitfollows[1] ; }
  	
 	return "$line";
 }
@@ -153,6 +152,16 @@ sub addBrLine {
 
 	$return =~ s/^$c|$c$//;
 	return ($return);
+}
+
+# sort_unique_hash(array)
+# sort unique array
+# global var : 
+# return	(%hash) 
+sub sort_unique_hash {
+	my %hash;
+	@hash{@_} = ();
+	return sort keys %hash;
 }
 
 1;

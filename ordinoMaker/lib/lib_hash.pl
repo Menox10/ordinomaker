@@ -68,6 +68,25 @@ $sched, $key
 			$Hsched{$sched}{'CLUSTER'} = $key;
 		}
 	}
+	
+	# Cluster si _MAIN et un seul ON
+	for $sched ( keys %Hsched ) {
+		if (	$Hsched{$sched}{'FROM'} eq "Main" && 
+					$Hsched{$sched}{'CLUSTER'} eq "_MAIN" ) {
+			if ( $Hsched{$sched}{'ON'} &&	@{$Hsched{$sched}{'ON'}} eq "1" ) {
+				my $ON = $Hsched{$sched}{'ON'}[0];
+				
+				if (	$ON eq "REQUEST" || 
+							$ON eq "SAMEDI" ||
+							$ON eq "DIMANCHE" ||
+							$ON eq "DAILY" ||
+							$ON eq "WORKDAY" )		{
+					$Hsched{$sched}{'CLUSTER'} = $ON ; 
+					$Hcluster{$ON} = ();
+				}
+			}
+		}
+	}
 }
 
 # setNext()
@@ -250,6 +269,7 @@ sub setJobsHash {
 			
 			if ($line =~ /^AFTER/ ) {
 				(my $after = $line ) =~ s/AFTER (.+)/$1/g;
+				$after =~ s/$cpuName#//;
 				$Hjobs{$job}{'AFTER'} = $after;
 				if ( ! $Hsched{$after} ) { initNode($after, "after") }
 			}

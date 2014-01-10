@@ -13,18 +13,22 @@
 # return	(void)
 sub setLinkAfter {
 	for my $sched ( keys %Hsched ) {
+	
+		my (@c_after, @t_after);
+		
 		foreach ( @{$Hsched{$sched}{'aJOBS'}} ) {
 			if( $Hjobs{$_} && $Hjobs{$_}{'AFTER'} ) {
 				my $after = $Hjobs{$_}{'AFTER'};
 				$after =~ s/${cpuName}#//g;
-				$linkAfter .= makeLink(	"$sched",
-																"$after", 
-																0, 
-																0, 
-																"darkolivegreen", 
-																"AFTER" );
+				push(@c_after, $after);
 			}
 		}
+		
+		@t_after = sort_unique_hash(@c_after);
+		foreach ( @t_after ) { 
+			$linkAfter .= makeLink(	"$sched", "$_",  0,  0,  "darkolivegreen",  "AFTER" );
+		}
+	
 	}
 }
 

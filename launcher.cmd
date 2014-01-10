@@ -1,5 +1,5 @@
 @echo off
-
+break
 REM 
 REM Name: launcher.cmd
 REM 
@@ -9,6 +9,8 @@ REM $Date$
 REM 
 
 REM mode con: cols=75 lines=75
+
+
 
 REM VARIABLE
 SET mypath=%~dp0
@@ -21,9 +23,14 @@ REM ---------------------------------------
 REM choix du fichier - launcher.pl
 cd %mypath:~0,-1%
 del  %tmpDir%\choixcpu.cmd 2> NUL
+:LAUNCHER
 %perl% -w %binDir%\launcher.pl
-REM echo %ERRORLEVEL%
-if not "%ERRORLEVEL%"=="0" (GOTO :END)
+SET CR=%ERRORLEVEL%
+
+IF "%CR%"=="1" (GOTO :END1)
+IF "%CR%"=="2" (GOTO :LAUNCHER)
+IF NOT "%CR%"=="0" (GOTO :END)
+
 CALL "%mypath:~0,-1%"\%tmpDir%\choixcpu.cmd
 
 REM ---------------------------------------
@@ -78,4 +85,7 @@ GOTO :END
 :END
 echo ----------------------------------------
 pause
+exit /B 0
+
+:END1
 exit /B 0
