@@ -37,6 +37,19 @@ sub setLinkAfter {
 # global var : %Hsched %Hjobs $maxSoloCol
 # return	(void)
 sub setLinks {
+	# maxSoloCol : 1 =< maxSoloCol >= 99 
+	if ( $maxSoloCol < 1 || $maxSoloCol > 99 ) { 
+		die "\$maxSoloCol=$maxSoloCol : valeur innattendu !";
+	}
+	# $count = Nombre de  Jobstream dans %Hsched
+	my $count = keys %Hsched;
+	
+	# Calcul de maxSoloCol courant
+	$maxSoloCol = int($count/$maxSoloCol);
+	if ( $maxSoloCol < 6 ) { $maxSoloCol = 6 };
+	
+	print "\n-> Alignement vertical des noeuds solo : $maxSoloCol (maxSoloCol)\n";
+
 	for my $sched ( keys %Hsched ) {
 		next if ( $Hsched{$sched}{'GRAPH'} eq "NO" );
 		my $cl = $Hsched{$sched}{'CLUSTER'};

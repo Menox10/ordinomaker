@@ -5,9 +5,8 @@
 # $Revision$
 # $Date$
 #
-
-
-use DateTime;
+use POSIX qw(strftime);
+# use DateTime;
 use Data::Dumper;
 use Spreadsheet::WriteExcel;
 
@@ -16,12 +15,9 @@ use Spreadsheet::WriteExcel;
 # global var : 
 # return	(string) 
 sub cDate {
-	my $dt = DateTime->now( time_zone => 'Europe/Paris' );  
-	my $return ;
-
-	$return = $dt->ymd('-') . 'T' . $dt->hms(':') ;
-
-	return($return);
+	my $date = strftime "%Y%m%dT%H:%M:%S", localtime;
+	# print $date;
+	return($date);
 }
 
 # dumperHash(%hash)
