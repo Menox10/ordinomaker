@@ -10,22 +10,12 @@ use strict;
 use warnings;
 # no warnings 'uninitialized';
 use File::Path;
-use Getopt::Long;
 require("./ordinoMaker/lib/lib_regexp.pl");
 require("./ordinoMaker/lib/lib_hash.pl");
 require("./ordinoMaker/lib/lib_log.pl");
 require("./ordinoMaker/lib/lib_makeGvFile.pl");
 require("./ordinoMaker/lib/lib_params.pl");
 require("./ordinoMaker/lib/lib_link.pl");
-use File::Path;
-
-################################################################################
-# Option
-our $jobs;
-
-GetOptions ("jobs"					=> \$jobs)
-or die("Erreur dans les arguemnts !\n");
-if ( ! $ARGV[0] ) {die("Merci de passer en paramètre le fichier d'entrée !\n")}
 
 ################################################################################
 # !! Variables !!
@@ -74,13 +64,13 @@ my $i;
 my $fichier_resultat	= 'head.txt';
 our $cDate						= cDate();
 our $cpuName;
-our $maxSoloCol;
-our ($linkFollows, $linkVfollows, $linkAfter, $linkSolo, $linkInfo);
 
 
 ################################################################################
 # Chargement fichier parametres
 load_params("./ordinoMaker/etc/ordinoMaker.conf");
+# initialisation du hash %Hconvfreq
+setConvertFreq("ordinoMaker/etc/convertFreq.conf");
 
 #######################
 # Programme Principal #
@@ -136,27 +126,8 @@ close $fh_source or die $!;
 close $fh_schedule or die $!;
 
 ################################################################################
-# initialisation du hash %Hconvfreq
-setConvertFreq("ordinoMaker/etc/convertFreq.conf");
-
-################################################################################
 # MAIN FILE : Ajout dans %Hsched
 setSchedFiles($cpuName, "_ordinogramme/$dirName/Jobstream");
-
-################################################################################
-# maxSoloCol
-# 1 =< maxSoloCol >= 99 
-if ( $maxSoloCol < 1 || $maxSoloCol > 99 ) { 
-	die "\$maxSoloCol=$maxSoloCol : valeur innattendu !";
-}
-# $count = Nombre de  Jobstream dans %Hsched
-my $count = keys %Hsched;
-
-# Calcul de maxSoloCol courant
-$maxSoloCol = int($count/$maxSoloCol);
-if ( $maxSoloCol < 6 ) { $maxSoloCol = 6 };
-
-print "\n-> Alignement vertical des noeuds solo : $maxSoloCol (maxSoloCol)\n";
 
 ################################################################################
 # CONF FILE : Ajout du ficher de _conf dans %Hsched

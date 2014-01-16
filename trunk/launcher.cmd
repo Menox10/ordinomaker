@@ -17,7 +17,8 @@ SET mypath=%~dp0
 SET binDir=ordinoMaker\bin
 SET tmpDir=ordinoMaker\tmp
 SET graphviz=%binDir%\graphviz\dev\release\bin
-SET perl=%binDir%\perl\perl\bin\perl5.18.0.exe
+REM SET perl=%binDir%\perl\perl\bin\perl5.18.0.exe
+SET perl=%binDir%\perl5.8.8\perl\bin\perl5.8.8.exe
 
 REM ---------------------------------------
 REM choix du fichier - launcher.pl
