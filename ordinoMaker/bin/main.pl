@@ -135,8 +135,8 @@ setCluster();
 # NEXT (l'inverse du (V)FOLLOWS) : dans %Hsched
 set_next();
 # Creation des relations
-set_links();
 if ( $chk_fjobs ) { set_link_after() }
+set_links();
 # Definition couleurs des cluster
 setClusterColor();
 

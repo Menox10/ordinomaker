@@ -72,7 +72,8 @@ sub set_links {
 		# Solo
 		if (	! $Hsched{$sched}{'FOLLOWS'} && 
 					! $Hsched{$sched}{'VFOLLOWS'} && 
-					! $Hsched{$sched}{'NEXT'}	) {
+					! $Hsched{$sched}{'NEXT'} &&
+					$Hsched{$sched}{'FROM'} =~ /Main|legende/) {
 					
 			if (	( ! $Hcluster{$cl}{'ArnaqueFollows'} ) || 
 						( $Hcluster{$cl}{'count'} >= $maxSoloCol ) ) { 

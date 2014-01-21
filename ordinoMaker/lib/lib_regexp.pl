@@ -44,6 +44,7 @@ sub re_freq {
 	for my $key ( keys %Hconvfreq ) {	$line =~ s/$key/$Hconvfreq{$key}/	}
 	$line =~ s/\s.*\sDESCRIPTION\s\".*\"\s/ /;
 	$line =~ s/\"//g;
+	$line =~ s/;$//g;
 	return("$line");
 }
 sub re_opens {

@@ -143,7 +143,7 @@ sub buildNodes {
 				#																$size						,$b, $align  , $bgcolor
 				case /^EVERY$/			 { @opt = ("$ref_size->[1]" ,1, "center", "yellow"		) }
 				case /^DESCRIPTION$/ { @opt = ("$ref_size->[0]" ,1, "left"	, 0						) }
-				case /^ON$|^EXCEPT$/ { @opt = ("$ref_size->[2]" ,0, "left"	, 0						) }
+				case /^ON$|^EXCEPT$/ { @opt = ("$ref_size->[2]" ,0, "center", 0						) }
 				case /^OPENS?$/			 { @opt = ("$ref_size->[2]" ,0, "left"	, "white:navy")	}
 				case /^AT$/					 { @opt = ("$ref_size->[2]" ,0, "left"	, 0						)	}
 				case /^JOBS$/				 { @opt = ("$ref_size->[2]" ,0, "left"	, 0						) }
@@ -180,6 +180,7 @@ sub setClusterColor {
 		} else {
 			$Hcluster{$cl}{'BGCOLOR'} = $color[$countColor] ;
 			++$countColor;
+			if ( ! $color[$countColor] ) { $countColor = 0 }
 		}
 	}
 }
@@ -249,7 +250,7 @@ sub writeVgFile {
 	# links
 	for my $key ( keys %Hlink ) {
 		my @t_after = sort_unique_hash(@{$Hlink{$key}});
-		foreach ( @t_after ) { print {$fh_vg} $_ . "\n"; }
+		foreach ( @t_after ) { print {$fh_vg} $_ }
 	}
 
 	# fin de fichier
