@@ -6,12 +6,30 @@
 # $Date$
 #
 
-# RegExpMain(string)RegExpFreq(string) RegExpOnExcept(string)
-## RegExpNeeds(string) RegExpFollows(string)
-#### RegExpOpens(string) RegExpAt(string) RegExpDesc(string)
-# applique les regexp en fonction du type d'info
-# global var : %Hconvfreq
-# return	(string) 
+use Switch;
+
+# regexpSwitcher($keyword, $line)
+# regexp - Switcher en fc du keyword
+# global var : 
+# return($string)
+sub regexpSwitcher {
+	my ($keyword, $line) = @_;
+
+	switch ($keyword) {
+		case /^FOLLOWS$/							{ $line =~ s/(.+)\..*$/$1/			 }
+		case /^CARRYFORWARD$/					{	$line = "y"										 }
+		case /^DESCRIPTION$/					{ $line = re_del_noAlpha($line) }
+		case /^ON$|^EXCEPT$/					{	$line = re_freq($line)				 }
+		case /^OPENS?$/								{	$line = re_opens($line)				 }
+		case /^AT$|^UNTIL$|^ONUNTIL$/	{ $line = re_at($line)					 }
+	}
+
+	if ( $keyword ) { $line =~ s/$keyword\s// }
+	$line =~ s/$cpuName#//;
+	trim(\$line);
+
+	return("$line");
+}
 
 sub RegExpMain {
 	my ($line) = @_ ;	
@@ -19,86 +37,33 @@ sub RegExpMain {
 	$line =~ s/\s+/ /g;
 	$line =~ s/^\s+|\s+$//g;
 	return "$line";
+} 
+sub re_freq {
+	my ($line) = @_;
+	$line =~ s/$_//g foreach ('RUNCYCLE','RULE[1-9]?','CALENDAR[0-9]?', 'SIMPLE[0-9]?');
+	for my $key ( keys %Hconvfreq ) {	$line =~ s/$key/$Hconvfreq{$key}/	}
+	$line =~ s/\s.*\sDESCRIPTION\s\".*\"\s/ /;
+	$line =~ s/\"//g;
+	return("$line");
 }
-
-sub RegExpFreq {
-	my ($return) = @_ ;
-	
-	for my $key ( keys %Hconvfreq ) {	$return =~ s/$key/$Hconvfreq{$key}/	}	
-
-	return ("$return");
-}
-
-sub RegExpOnExcept {
+sub re_opens {
 	my ($line) = @_ ;
-	# print "\tRegExpOn " . $line;
-	$line = RegExpFreq("$line");
-	$line =~ s/$_//g foreach ('^ON\b','^EXCEPT\b','RUNCYCLE','RULE[1-9]','CALENDAR[0-9]','FREQ=', '\"', ';$');
-	
-	$line = RegExpMain("$line");
-	return "$line";
-}
-
-# gobal var :cpuName
-sub RegExpNeeds {
-	my ($line) = @_ ;
-	# print "\tRegExpNeeds " . $line ;
-	$line =~ s/$_// foreach ('NEEDS\b',"$cpuName#");
-
-	$line = RegExpMain("$line");
-	return "$line";
-}
-
-# gobal var :cpuName
-sub RegExpFollows {
-	my ($line,$cpu) = @_ ;
-	
-	$line =~ s/\..*\s|\.@\s?/ /;
-	$line =~ s/FOLLOWS\b\s//;
-	$line =~ s/\s.*$//;
-	$line =~ s/$cpuName\#//;
-	$line = RegExpMain("$line");
-	$line = uc($line);
- 	
-	return "$line";
-}
-
-sub RegExpOpens {
-	my ($line) = @_ ;
-	# print "\tRegExpOpens " . $line ;
-	$line =~ s/$_// foreach ('^OPENS?\b','"$');
+	$line =~ s/$_// foreach ( '"$', '\?+' );
 	$line = (split(/[\\\/]/, $line))[-1];
-	$line =~ s/\?+$//;
-	$line = RegExpMain("$line");
-	return "$line";
+	return("$line");
 }
-
-sub RegExpAt {
+sub re_at {
 	my ($line) = @_ ;
-	# print "\tRegExpAt " . $line ;
 	$line =~ s/AT /@/;
-	$line =~ s/ONUNTIL //;
 	$line =~ s/UNTIL /-/;
+	$line =~ s/ONUNTIL //;
 	$line =~ s/ -/-/;
-	$line = RegExpMain("$line");
+	$line =~ s/^\-/\@0600\-/;
 	return "$line";
 }
-
-sub RegExpDesc {
-	my ($line) = @_ ;
-	# print "\tRegExpDesc " . $line ;
-	$line =~ s/$_//g foreach ('^DESCRIPTION\b', '"');
-	$line = RegExpMain(RegExpDelNoAlph($line));
-	return($line);
-}
-
-# RegExpDelNoAlph(string)
-# Supprime les carc. non alpha-num qui ne sont pas pris en charge
-# global var : 
-# return	(string) 
-sub RegExpDelNoAlph {
+sub re_del_noAlpha {
 	my ($return) = @_ ;
-	$return =~ s/$_//g foreach ('&' ,'{' ,'}' ,'\|');
+	$return =~ s/$_//g foreach ('&' ,'{' ,'}' ,'\|', '"');
 	return ("$return");
 }
 
@@ -108,11 +73,13 @@ sub RegExpDelNoAlph {
 # return	(string, string, string) 
 sub splitLine {
 	my ($line) = @_;
-	$line = RegExpDelNoAlph("$line");
-	my @custom = split('[:=]', $line, 3);
-	my $ref = uc(RegExpMain($custom[0]));
-	my $key = uc(RegExpMain($custom[1]));
-	my $value = RegExpMain($custom[2]);
+	
+	$line = re_del_noAlpha("$line");
+	my ($ref, $key, $value) = split('[:=]', $line, 3);
+	$ref		= uc(RegExpMain($ref));
+	$key 		= uc(RegExpMain($key));
+	$value	= RegExpMain($value);
+	
 	return ("$ref","$key","$value");
 }
 
@@ -154,14 +121,14 @@ sub addBrLine {
 	return ($return);
 }
 
-# sort_unique_hash(array)
-# sort unique array
+# trim(\$string)
+# Supprime les espaces en début et fin de ligne
 # global var : 
-# return	(%hash) 
-sub sort_unique_hash {
-	my %hash;
-	@hash{@_} = ();
-	return sort keys %hash;
+# return	(void)
+sub trim {
+	my $string = shift;
+	 $$string =~ s/^\s+|\s+$//g;
 }
+
 
 1;

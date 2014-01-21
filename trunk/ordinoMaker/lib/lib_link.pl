@@ -7,16 +7,17 @@
 #
 
 
-# setLinkAfter()
+# set_link_after()
 # relation : after
 # global var : %Hsched %Hjobs
 # return	(void)
-sub setLinkAfter {
+sub set_link_after {
 	for my $sched ( keys %Hsched ) {
-	
+		next if ( ! $Hsched{$sched}{'JOB_INC'} );
+		
 		my (@c_after, @t_after);
 		
-		foreach ( @{$Hsched{$sched}{'aJOBS'}} ) {
+		foreach ( @{$Hsched{$sched}{'JOB_INC'}} ) {
 			if( $Hjobs{$_} && $Hjobs{$_}{'AFTER'} ) {
 				my $after = $Hjobs{$_}{'AFTER'};
 				$after =~ s/${cpuName}#//g;
@@ -26,9 +27,10 @@ sub setLinkAfter {
 		
 		@t_after = sort_unique_hash(@c_after);
 		foreach ( @t_after ) { 
-			$linkAfter .= makeLink(	"$sched", "$_",  0,  0,  "darkolivegreen",  "AFTER" );
+			push(	@{$Hlink{'AFTER'}},
+						makeLink(	"$sched", "$_",  0,  0,  "darkolivegreen",  "AFTER" )
+			);
 		}
-	
 	}
 }
 
@@ -36,7 +38,7 @@ sub setLinkAfter {
 # follows 
 # global var : %Hsched %Hjobs $maxSoloCol
 # return	(void)
-sub setLinks {
+sub set_links {
 	# maxSoloCol : 1 =< maxSoloCol >= 99 
 	if ( $maxSoloCol < 1 || $maxSoloCol > 99 ) { 
 		die "\$maxSoloCol=$maxSoloCol : valeur innattendu !";
@@ -51,27 +53,19 @@ sub setLinks {
 	print "\n-> Alignement vertical des noeuds solo : $maxSoloCol (maxSoloCol)\n";
 
 	for my $sched ( keys %Hsched ) {
-		next if ( $Hsched{$sched}{'GRAPH'} eq "NO" );
 		my $cl = $Hsched{$sched}{'CLUSTER'};
 
 		# Follows
 		if ( $Hsched{$sched}{'FOLLOWS'} ) { 
 			foreach ( @{$Hsched{$sched}{'FOLLOWS'}} ) { 
-				$linkFollows .= makeLink("$_", "$sched", 0, 0, 0, 0);
+				push(@{$Hlink{'FOLLOWS'}}, makeLink("$_", "$sched", 0, 0, 0, 0) );
 			}
 		}
 		
-	
 		# Vfollows
 		if ( $Hsched{$sched}{'VFOLLOWS'} ) {
-			my @relationSplit = split( ";" , $Hsched{$sched}{'VFOLLOWS'} );
-			foreach ( @relationSplit ) {
-				$linkVfollows .= makeLink("$_", 
-															"$sched", 
-															"$vfo_arrowhead", 
-															"$vfo_style", 
-															"$vfo_color", 
-															0 );
+			foreach ( @{$Hsched{$sched}{'VFOLLOWS'}} ) {
+				push(@{$Hlink{'VFOLLOWS'}},	makeLink(	"$_", "$sched", "$vfo_arrowhead", "$vfo_style", "$vfo_color", 0) );
 			}
 		}
 		
@@ -86,7 +80,9 @@ sub setLinks {
 				$Hcluster{$cl}{'count'} = 1;
 			} else {
 				my $c_sched = $Hcluster{$cl}{'ArnaqueFollows'};
-				$linkSolo .= makeLink("$c_sched", "$sched", "none", 0, "none", 0);
+				push(@{$Hlink{'SOLO'}},
+							makeLink("$c_sched", "$sched", "none", 0, "none", 0)
+						);
 				$Hcluster{$cl}{'ArnaqueFollows'} = $sched;
 				++$Hcluster{$cl}{'count'};
 			}

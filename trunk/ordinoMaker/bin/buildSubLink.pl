@@ -70,8 +70,10 @@ foreach ( @filesBin ) {	getSub($_) ;}
 # lib #
 opendir(DIR, $libDir) or die $!;
 while ( readdir(DIR) ) {
-	next if ($_ !~ m/^lib\_.+\.pl$/ );
-	getSub("$libDir/$_");
+	if (	$_  eq "lib_hash.pl" || 	$_  eq "lib_link.pl" ||	
+				$_  eq "lib_makeGvFile.pl" || $_  eq "lib_regexp.pl" || $_  eq "lib_utils.pl" ) {
+		getSub("$libDir/$_");
+	}
 }
 closedir(DIR) or die $!;
 
@@ -109,8 +111,10 @@ foreach ( @filesBin ) {	getLink($_); }
 # lib #
 opendir(DIR, $libDir) or die $!;
 while ( readdir(DIR) ) {
-	next if ($_ !~ m/^lib\_.+\.pl$/ );
-	getLink("$libDir/$_");
+	if (	$_  eq "lib_hash.pl" || 	$_  eq "lib_link.pl" ||	
+				$_  eq "lib_makeGvFile.pl" || $_  eq "lib_regexp.pl" || $_  eq "lib_utils.pl" ) {
+		getLink("$libDir/$_");
+	}
 }
 closedir(DIR) or die $!;
 
