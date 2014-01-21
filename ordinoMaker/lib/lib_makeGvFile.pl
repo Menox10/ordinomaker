@@ -6,10 +6,11 @@
 # $Date$
 #
 
+use Switch;
 
 # setInNode($sched, $param, $size, $bold, $align, $bgcolor)
 # création phrase compatible fic. graphviz
-# global var : %Hsched %Hjobs $br $maxline $cpuName
+# global var : %Hsched $br $maxline
 # return	(string) 
 sub setInNode {
 	my ($sched, $param, $size, $bold, $align, $bgcolor) = @_ ;
@@ -18,29 +19,11 @@ sub setInNode {
 	if ( defined($Hsched{$sched}{$param}) ) {
 		my $value = "unknown";
 		my $ref = \$Hsched{$sched}{$param};	
+		
+		if ( ref($$ref) eq "ARRAY" ) { $value = join("$br", @{$Hsched{$sched}{$param}}) }
+		if ( ref($ref) eq "SCALAR" ) { $value = $Hsched{$sched}{$param}	}
 
-		if ( ($param ne "JOBS") && (ref($$ref) eq "ARRAY") ) {
-			$value = join("$br", @{$Hsched{$sched}{$param}});
-		} elsif ( ref($ref) eq "SCALAR" ) {
-			$value = $Hsched{$sched}{$param};
-		}	
-	
-		if ( $param eq "JOBS" ) {
-			$value = "";
-			foreach ( @{$Hsched{$sched}{$param}} ) {
-				$value .= $_;
-				if ( defined($Hjobs{$_}) && defined($Hjobs{$_}{'RECOVERY'}) ) {
-					$value .= " ($Hjobs{$_}{'RECOVERY'})"
-				}
-				$value =~ s/$cpuName\#//g;
-				$value .= $br;
-			}
-		}
-
-		if ( $param eq "DESCRIPTION" ) {
-			$Hsched{$sched}{'DESCRIPTION'} = RegExpDesc("$Hsched{$sched}{'DESCRIPTION'}");
-			$value = addBrLine("$Hsched{$sched}{'DESCRIPTION'}", $br, $maxline);
-		}
+		if ( $param eq "DESCRIPTION" ) { $value = addBrLine($value, $br, $maxline) }
 
 		$return = '<tr><td align="' . $align . '" ' 								;
 		if ( $bgcolor ) { $return .= 'bgcolor="' . $bgcolor . '"' }	;
@@ -58,7 +41,7 @@ sub setInNode {
 # return	(string, string)
 sub setInfoNode {
 	my ($sched, $text) = @_;
-	$text = RegExpDesc($text);
+	$text = re_del_noAlpha($text);
 	$text = addBrLine($text, "\n", 25);
 
 	my $nameInfoNode = "Info_" . $sched;
@@ -72,25 +55,32 @@ sub setInfoNode {
 		 $node .= "fontsize=\"$ni_fontsize\" "	;
 		 $node .= "margin=\"$ni_margin\" "			;
 		 $node .= "]"														; 
-		 
-	my $link = makeLink("$nameInfoNode", "$sched","$li_arrowhead", "$li_style", "$li_color", 0);
+	
+	push(	@{$Hlink{'INFO'}},
+				makeLink("$nameInfoNode", "$sched","$li_arrowhead", "$li_style", "$li_color", 0)
+			);
 
-	return("$node", "$link");
+	return("$node");
 }
 
-# setNodeclusterRelation($string, bool($simple), bool($full))
+# buildNodes($string, bool($simple), bool($full))
 # Création des variables pour le fichier .gv
-# global var : %Hsched %Hcluster $relation $mainColor
+# global var : %Hsched %Hcluster
 # option var : $jobs
 # return	(void) 
-sub setNodeclusterRelation {
+sub buildNodes {
 	my ($dirName, $simple, $full) =	@_;
 	my $sched;
 	my $node;
 	my $cl;
 	my @cellule_size = ('6', '7' , '8' , '9', '15');
 	my @legende_size = ('4', '4' , '5' , '6', '9');
+	my @keywords_con;
 	$linkInfo = "";
+	
+	if ( ! $simple && ! $full ) { @keywords_con = @keywordStd	}
+	if ( $simple ) 							{ @keywords_con = ( @keywordSimple, "OUTFILE") }
+	if ( $full ) 								{ @keywords_con = ( @keywordFull, "OUTFILE", "JOBS") }
 	
 	for my $key ( keys %Hcluster ) {
 		delete ($Hcluster{$key}{'NODE'});
@@ -100,9 +90,6 @@ sub setNodeclusterRelation {
 
 	# Creation du fichier graphviz - fichier ".gv"
 	for $sched ( sort keys %Hsched ) {
-		# Exception	
-		next if ( $Hsched{$sched}{'GRAPH'} eq "NO" );
-
 		# get Cluster du sched
 		$cl = $Hsched{$sched}{'CLUSTER'};
 		my $ref_size =  \@cellule_size;
@@ -142,44 +129,41 @@ sub setNodeclusterRelation {
 
 		# node : cell Shed
 		$node .= "\n<tr><td bgcolor=\"";
-		$node .= ( $Hsched{$sched}{'CF'} ) ? "orangered" : "azure2";
+		$node .= ( $Hsched{$sched}{'CARRYFORWARD'} ) ? "orangered" : "azure2";
 		$node .= '" align="center"><font color="black"';
 		$node .= " point-size=\"$ref_size->[4]\"><B>";
 		$node .= $sched;
 		$node .= "</B></font></td></tr>\n";
 		
-		# node : other cells
-		if ( ! $simple ) {
-			#											$sched,	$param	  		,$size						,$b, $align  	, $bgcolor
-				$node .= 	setInNode($sched, "DESCRIPTION"	,"$ref_size->[0]" ,1,  "left"		, 0						);
-				$node .= 	setInNode($sched, "EVERY"				,"$ref_size->[1]" ,1,  "center"	, "yellow"		);
-		}
 		
-				$node .= 	setInNode($sched, "ON"					,"$ref_size->[3]" ,1,  "center"	, 0						);
-				
-		if ( ! $simple ) {
-				$node .= 	setInNode($sched, "EXCEPT"			,"$ref_size->[2]" ,0,  "left"		, 0						);
-				$node .= 	setInNode($sched, "AT"					,"$ref_size->[2]" ,0,  "left"		, 0						);
-				$node .= 	setInNode($sched, "NEEDS"				,"$ref_size->[1]" ,1,  "center"	, "orange"		);
-				$node .= 	setInNode($sched, "OPENS"				,"$ref_size->[2]" ,0,  "left"		, "white:navy");
-				$node .= 	setInNode($sched, "OUTFILE"			,"$ref_size->[2]" ,0,  "right"	, "navy:white");
-			if ($full) {					                                             
-				$node .= 	setInNode($sched,	"JOBS"				,"$ref_size->[2]" ,0 ,  "left"	, 0						);
-			}                                                                  
+		foreach ( @keywords_con ) {
+			next if ( $Hsched{$sched} && ( ! $Hsched{$sched}{$_} ) );
+			my @opt;
+			switch ($_) {
+				#																$size						,$b, $align  , $bgcolor
+				case /^EVERY$/			 { @opt = ("$ref_size->[1]" ,1, "center", "yellow"		) }
+				case /^DESCRIPTION$/ { @opt = ("$ref_size->[0]" ,1, "left"	, 0						) }
+				case /^ON$|^EXCEPT$/ { @opt = ("$ref_size->[2]" ,0, "left"	, 0						) }
+				case /^OPENS?$/			 { @opt = ("$ref_size->[2]" ,0, "left"	, "white:navy")	}
+				case /^AT$/					 { @opt = ("$ref_size->[2]" ,0, "left"	, 0						)	}
+				case /^JOBS$/				 { @opt = ("$ref_size->[2]" ,0, "left"	, 0						) }
+				case /^NEEDS$/			 { @opt = ("$ref_size->[1]" ,1, "center", "orange"		) }
+				case /^OUTFILE$/		 { @opt = ("$ref_size->[2]" ,0, "right"	, "navy:white") }
+				else								 { @opt = ("$ref_size->[2]" ,0, "left"	, 0						) }
+			}
+			$node .= setInNode($sched, $_, @opt);
 		}
-		
+
 		# node end
 		$node .= "</table>> ];";
-		
-		# Def du cluster graph + color font
-		$Hcluster{$cl}{'NODE'} .= $node . "\n";
-		
+
 		# INFO node
 		if ( $Hsched{$sched}{'INFO'} ) {
-			my ($infoNode, $infoLink) = setInfoNode("$sched", "$Hsched{$sched}{'INFO'}");
-			$Hcluster{$cl}{'NODE'} .= $infoNode . "\n";
-			$linkInfo .= $infoLink;
+			$node .= "\n" . setInfoNode("$sched", "$Hsched{$sched}{'INFO'}");
 		}
+		
+		# fin de $node
+		$Hcluster{$cl}{'NODE'} .= $node . "\n\n";
 	}
 }
 
@@ -256,18 +240,17 @@ sub writeVgFile {
 		$cl_def .= 'bgcolor="' . $Hcluster{$clusterName}{'BGCOLOR'} . "\";\n";
 		$cl_def .= "$Hcluster{$clusterName}{'NODE'}";
 		if ( $cl_Underscore eq "_INFO_") { $cl_Underscore = "" }
-		$cl_def .= "\nlabel = \"" . $cl_Underscore . "\" ;";
+		$cl_def .= "label = \"" . $cl_Underscore . "\" ;";
 		$cl_def .= "\n}\n";
 		
 		print {$fh_vg} $cl_def;
 	}
 	
-	# link
-	if ( $linkFollows	)		{ print {$fh_vg} $linkFollows		}
-	if ( $linkVfollows)		{ print {$fh_vg} $linkVfollows	}
-	if ( $linkAfter		)		{ print {$fh_vg} $linkAfter			}
-	if ( $linkSolo		)		{ print {$fh_vg} $linkSolo			}
-	if ( $linkInfo		)		{ print {$fh_vg} $linkInfo			}
+	# links
+	for my $key ( keys %Hlink ) {
+		my @t_after = sort_unique_hash(@{$Hlink{$key}});
+		foreach ( @t_after ) { print {$fh_vg} $_ . "\n"; }
+	}
 
 	# fin de fichier
 	print {$fh_vg}  "\n}\n";

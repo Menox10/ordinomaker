@@ -1,12 +1,12 @@
 #
-# Name: lib_log.pl
+# Name: lib_utils.pl
 # 
 # SVN Information:
 # $Revision$
 # $Date$
 #
+
 use POSIX qw(strftime);
-# use DateTime;
 use Data::Dumper;
 use Spreadsheet::WriteExcel;
 
@@ -18,6 +18,144 @@ sub cDate {
 	my $date = strftime "%Y%m%dT%H:%M:%S", localtime;
 	# print $date;
 	return($date);
+}
+
+# sort_unique_hash(array)
+# sort unique array
+# global var : 
+# return	(%hash) 
+sub sort_unique_hash {
+	my %hash;
+	@hash{@_} = ();
+	return sort keys %hash;
+}
+
+# checkEnv($source_file, $jobs_file, $conf_file, $dirName)
+# check et print de l environnement
+# global var :
+# return(void)
+sub checkEnv {
+	my ($source_file, $jobs_file, $conf_file, $dirName) = @_;
+	
+	# Check - Fichier jobstream
+	if ( ! -e "$source_file" ) {
+		die("$source_file : fichier source non present !\n");
+	}
+	
+	if ( -e "$jobs_file" ) { $chk_fjobs = 1 }
+	if ( -e "$conf_file" ) { $chk_fconf = 1 }
+	
+	# Print environnement
+	print "\n-> Fichier Source  = " . $source_file . "\n";
+	print "\tFic. Jobs  = " . ( ( $chk_fjobs ) ? 
+																		"$jobs_file" : 
+																		"! Non present ($jobs_file)"
+														) . "\n" ;
+	print "\tFic. Conf  = " . ( ( $chk_fconf ) ? 
+																		$conf_file : 
+																		"Pas de fichier de conf"
+														) . "\n";
+	print "\tRepertoire = $dirName";
+	print "\n\n";
+
+}
+
+# setConvertFreq(string)
+# Injection dans %Hconvfreq fichier convertFreq.conf
+# global var : %Hconvfreq
+# return	(void)
+sub setConvertFreq {
+	my $file = shift;
+	my ($key, $value) ;
+	
+	open $fh, '<', $file or die;
+	
+	while (my $line = <$fh>) {
+		next if ( $line =~ /^$|^#/);
+		($key, $value) = split(/=>/, $line);
+		$key		= RegExpMain($key);
+		$value	= RegExpMain($value);
+		$Hconvfreq{$key} = $value;
+	}
+}
+
+# load_params($file)
+# fonction de lecture du fichier de parametres
+# global var : 
+# return	(void)
+sub load_params {
+	my ($file) = @_;
+	my $key;
+	my $value;
+
+	open my $fh_params, '<',  $file or die $!;
+
+	while ( <$fh_params> ) {
+		chomp();	
+		next if ( /^#/ ) ;
+		next if ( /^$/ ) ;
+		
+		($key,$value) = split("=",$_);
+		
+		# Global
+		if ( $key eq "keywords"			)	{ our @keywords			 = split(/;/, $value) }
+		if ( $key eq "keywordStd"		)	{ our @keywordStd		 = split(/;/, $value) }
+		if ( $key eq "keywordSimple")	{ our @keywordSimple = split(/;/, $value) }
+		if ( $key eq "keywordFull"	)	{ our @keywordFull	 = split(/;/, $value) }
+		
+		if ( $key eq "color" 			) { our @color 			= split(/;/, $value) }
+		if ( $key eq "mainColor"	)	{	our $mainColor	= $value 						 }
+		if ( $key eq "br" 				)	{ our $br					= $value 						 }
+		if ( $key eq "maxline"		)	{ our $maxline		= $value 						 }
+		if ( $key eq "legend"			)	{ our $legend			= $value 						 }
+		if ( $key eq "maxSoloCol"	)	{ our $maxSoloCol	= $value 						 }
+		
+		# nodeHead : nh_
+		if ( $key eq "nh_fontname"	)	{ our $nh_fontname		= $value }
+		if ( $key eq "nh_penwidth"	)	{ our $nh_penwidth		= $value }
+		if ( $key eq "nh_style"			)	{ our $nh_style				= $value }
+		if ( $key eq "nh_margin"		)	{ our $nh_margin			= $value }
+		
+		if ( $key eq "nh_border"			)	{ our $nh_border			= $value }
+		if ( $key eq "nh_cellborder"	)	{ our $nh_cellborder	= $value }
+		if ( $key eq "nh_cellpadding"	)	{ our $nh_cellpadding	= $value }
+		if ( $key eq "nh_cellspacing"	)	{ our $nh_cellspacing	= $value }
+		if ( $key eq "nh_bgcolor"			)	{ our $nh_bgcolor			= $value }
+		
+		if ( $key eq "nh_shape_main"			)	{ our $nh_shape_main			= $value }
+		if ( $key eq "nh_fillcolor_main"	)	{ our $nh_fillcolor_main	= $value }		
+		if ( $key eq "nh_shape_other"			)	{ our $nh_shape_other			= $value }		
+		if ( $key eq "nh_fillcolor_other"	)	{ our $nh_fillcolor_other	= $value }
+		
+		# graphHead : gh_
+		if ( $key eq "gh_fontsize" )	{ our $gh_fontsize	= $value }
+		if ( $key eq "gh_splines"	 )	{ our $gh_splines		= $value }		
+		if ( $key eq "gh_overlap"	 )	{ our $gh_overlap		= $value }		
+		if ( $key eq "gh_ratio"		 )	{ our $gh_ratio			= $value }
+		if ( $key eq "gh_nodesep"	 )	{ our $gh_nodesep		= $value }
+		if ( $key eq "gh_ranksep"	 )	{ our $gh_ranksep		= $value }		
+		if ( $key eq "gh_labelloc" )	{ our $gh_labelloc	= $value }
+		
+		# nodeInfo : ni_
+		if ( $key eq "ni_shape"			)	{ our $ni_shape			= $value }		
+		if ( $key eq "ni_color"			)	{ our $ni_color			= $value }
+		if ( $key eq "ni_fontname"	)	{ our $ni_fontname	= $value }
+		if ( $key eq "ni_fontsize"	)	{ our $ni_fontsize	= $value }		
+		if ( $key eq "ni_margin"		)	{ our $ni_margin		= $value }
+		# nodeInfo : li_
+		if ( $key eq "li_arrowhead"	)	{ our $li_arrowhead	= $value }
+		if ( $key eq "li_style"			)	{ our $li_style			= $value }		
+		if ( $key eq "li_color"			)	{ our $li_color			= $value }
+		
+		# vfollows : vfo_
+		if ( $key eq "vfo_arrowhead")	{ our $vfo_arrowhead	= $value }
+		if ( $key eq "vfo_style"		)	{ our $vfo_style			= $value }		
+		if ( $key eq "vfo_color"		)	{ our $vfo_color			= $value }
+	
+		# cluster : cl_
+		if ( $key eq "cl_labelloc" )	{ our $cl_labelloc = $value }		
+		if ( $key eq "cl_fontsize" )	{ our $cl_fontsize = $value }
+	} 
 }
 
 # dumperHash(%hash)
@@ -56,6 +194,8 @@ sub writeLog {
 	print {$fh_log} "\n\%Hjobs\n$dump_hash\n";
 	$dump_hash = dumperHash(%Hcluster);
 	print {$fh_log} "\n\%Hcluster\n$dump_hash\n";
+	$dump_hash = dumperHash(%Hlink);
+	print {$fh_log} "\n\%Hlink\n$dump_hash\n";
 	$dump_hash = dumperHash(%Hconvfreq);
 	print {$fh_log} "\n\%Hconvfreq\n$dump_hash\n";
 	
@@ -135,11 +275,12 @@ sub makeXlsFile {
 		
 		foreach ( @title ) {
 			my $value;
-			my $ref = \$Hsched{$key}{$_};	
+			my $ref = "undef";
+			if ( $Hsched{$key}{$_} ) { $ref = \$Hsched{$key}{$_} }
 			my $cformat = (	$_ eq "OUTFILE" ||
 											$_ eq "VFOLLOWS" ||
 											$_ eq "NEXT" ||
-											$_ eq  "CLUSTER"
+											$_ eq "CLUSTER"
 										) ? $format_valueConf : $format_valueMain;
 			
 			if ( $col == 0 ) {
@@ -215,4 +356,6 @@ sub _add_carac {
 	$$var = $$var . $add ;
 }
 
+
 1;
+__END__
