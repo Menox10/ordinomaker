@@ -228,7 +228,7 @@ sub writeVgFile {
 	for $clusterName ( sort keys %Hcluster ) {
 		my $cl_Underscore;
 		my $cl_def;
-		( $cl_Underscore = $clusterName ) =~ s/[ \\\/"-.]/_/g;
+		( $cl_Underscore = $clusterName ) =~ s/[ \\\/"-.;]/_/g;
 		
 		next if ( $clusterName eq "_MAIN"  ) ;
 		next if ( ! $Hcluster{$clusterName}{'NODE'} );
@@ -238,6 +238,9 @@ sub writeVgFile {
 		$cl_def .= " {\n";
 		$cl_def .= "labelloc=\"$cl_labelloc\";\n";
 		$cl_def .= "fontsize=$cl_fontsize;\n";
+		if ( ! $Hcluster{$clusterName}{'BGCOLOR'} ) { 
+			$Hcluster{$clusterName}{'BGCOLOR'} = "dimgray";
+		}
 		$cl_def .= 'bgcolor="' . $Hcluster{$clusterName}{'BGCOLOR'} . "\";\n";
 		$cl_def .= "$Hcluster{$clusterName}{'NODE'}";
 		if ( $cl_Underscore eq "_INFO_") { $cl_Underscore = "" }

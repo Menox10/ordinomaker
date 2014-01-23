@@ -134,12 +134,11 @@ initLegende();
 setCluster();
 # NEXT (l'inverse du (V)FOLLOWS) : dans %Hsched
 set_next();
+# Definition couleurs des cluster
+setClusterColor();
 # Creation des relations
 if ( $chk_fjobs ) { set_link_after() }
 set_links();
-# Definition couleurs des cluster
-setClusterColor();
-
 
 ################################################################################
 # Création des fichiers .vg

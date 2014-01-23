@@ -261,20 +261,17 @@ $sched, $key
 	
 	# Cluster si _MAIN et un seul ON
 	for $sched ( keys %Hsched ) {
-		if (	$Hsched{$sched}{'FROM'} eq "Main" && 
-					$Hsched{$sched}{'CLUSTER'} eq "_MAIN" ) {
+		if ( $Hsched{$sched}{'FROM'} eq "Main" && $Hsched{$sched}{'CLUSTER'} eq "_MAIN" ) {
 			if ( $Hsched{$sched}{'ON'} &&	@{$Hsched{$sched}{'ON'}} eq "1" ) {
-				my $ON = $Hsched{$sched}{'ON'}[0];
-	
-				if (	$ON eq "REQUEST" || 
-							$ON eq "SA" ||
-							$ON eq "SU" ||
-							$ON eq "SA,SU" ||
-							$ON eq "DAILY" ||
-							$ON eq "WORKDAY" )		{
-					if ( $ON eq "SA,SU" ) { $ON = "week-end"}
-					$Hsched{$sched}{'CLUSTER'} = $ON ; 
-					$Hcluster{$ON} = ();
+				my $cl = $Hsched{$sched}{'ON'}[0];
+				if (	$cl eq "REQUEST" || 
+							$cl eq "SA" ||
+							$cl eq "SU" ||
+							$cl eq "SA,SU" ||
+							$cl eq "DAILY" ||
+							$cl eq "WORKDAY" )		{
+					if ( $cl eq "SA,SU" ) { $cl = "week-end"}
+					$Hsched{$sched}{'CLUSTER'} = $cl ; 
 				}
 			}
 		}

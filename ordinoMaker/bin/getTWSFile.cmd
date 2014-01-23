@@ -9,7 +9,8 @@ REM $Date$
 REM 
 
 SET mypath=%~dp0
-SET PATH=%PATH%;%mypath%
+SET PATH=%mypath%;%mypath%convertFile\bin\;%PATH%
+echo %PATH%
 
 REM Server Ref
 SET ruser=wasstdp
@@ -30,7 +31,7 @@ SET Env=
 
 SET composer=/opt/IBM/TWA/TWS/bin/composer
 SET hostname=/usr/bin/hostname
-SET desk="%HOMEDRIVE%%HOMEPATH%\Bureau"
+SET desk=%HOMEDRIVE%%HOMEPATH%\Bureau
 
 if "%CPU%"=="" (
 	echo Usage :
@@ -108,7 +109,7 @@ plink.exe -pw %rpw% %ruser%@%rserver% "%rcmd3%"
 
 REM scp Ref -> Local
 echo    ^=^> scp Ref -^> Local
-pscp.exe -pw %rpw% %ruser%@%rserver%:%rdir%/%CPU%* %desk%
+pscp.exe -pw %rpw% %ruser%@%rserver%:%rdir%/%CPU%* "%desk%"
 
 REM Purge
 SET rcmd4=rm %rdir%/%Fsched% %rdir%/%Fjobs%
@@ -116,8 +117,8 @@ plink.exe -pw %rpw% %ruser%@%rserver% "%rcmd4%"
 
 REM CovertFile unix -> dos
 echo    ^=^> CovertFile unix -^> dos
-bin\unix2dos.exe %desk%\%Fsched% 2> NUL
-bin\unix2dos.exe %desk%\%Fjobs% 2> NUL
+CALL unix2dos.exe "%desk%\%Fsched%" 
+CALL unix2dos.exe "%desk%\%Fjobs%"
 
 :END
 echo --------------------
