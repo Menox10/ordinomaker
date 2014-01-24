@@ -79,7 +79,7 @@ sub buildNodes {
 	$linkInfo = "";
 	
 	if ( ! $simple && ! $full ) { @keywords_con = @keywordStd	}
-	if ( $simple ) 							{ @keywords_con = ( @keywordSimple, "OUTFILE") }
+	if ( $simple ) 							{ @keywords_con = ( @keywordSimple ) }
 	if ( $full ) 								{ @keywords_con = ( @keywordFull, "OUTFILE", "JOBS") }
 	
 	for my $key ( keys %Hcluster ) {
