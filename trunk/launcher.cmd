@@ -23,7 +23,7 @@ SET perl=%binDir%\perl5.8.8\perl\bin\perl5.8.8.exe
 REM ---------------------------------------
 REM choix du fichier - launcher.pl
 cd %mypath:~0,-1%
-del  %tmpDir%\choixcpu.cmd 2> NUL
+del %tmpDir%\choixcpu.cmd > NUL 2> NUL
 :LAUNCHER
 %perl% -w %binDir%\launcher.pl
 SET CR=%ERRORLEVEL%

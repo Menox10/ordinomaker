@@ -10,7 +10,6 @@ REM
 
 SET mypath=%~dp0
 SET PATH=%mypath%;%mypath%convertFile\bin\;%PATH%
-echo %PATH%
 
 REM Server Ref
 SET ruser=wasstdp
@@ -25,59 +24,25 @@ SET mPserver=spu0wa34
 SET mdir=/home/tws_ga1/APPLICATIONS/CRR/Exploit/tmp
 
 REM variable
-SET CPU=%1
-SET Server=
-SET Env=
+SET CPU=%2
+SET Env=%1
+
 
 SET composer=/opt/IBM/TWA/TWS/bin/composer
 SET hostname=/usr/bin/hostname
 SET desk=%HOMEDRIVE%%HOMEPATH%\Bureau
 
-if "%CPU%"=="" (
-	echo Usage :
-	echo    %0 [ CPU ]
-	GOTO :END
-)
-
-echo --------------------
-echo Bureau ^= %desk%
+IF "%CPU%"=="" ( GOTO :USAGE )
 
 REM ############################################################################
 :getEnv
-REM VPN
-ping -w 100 -n 1 172.26.1.90 > NUL
-IF NOT "%ERRORLEVEL%"=="0" (
-	echo VPN : Aucune Connexion !
-	GOTO :END
-) ELSE (
-	echo VPN : Connexion OK
-)
+if "%Env%"=="Qualif" (SET Server=%mKserver%)
+if "%Env%"=="Prod"	 (SET Server=%mPserver%)
 
-REM Init
-echo y | plink.exe -pw %rpw% %ruser%@%rserver% "echo Ref : $(%hostname%)"
-IF NOT "%ERRORLEVEL%"=="0" (
-	echo Probleme de connexion avec le serveur Ref
-	GOTO :END
-)
+if "%Server%"=="" (	GOTO :USAGE )
 
-REM Test Prod
-plink.exe -pw %rpw% %ruser%@%rserver% "ping -c 1 %mPserver% > /dev/null 2>&1"
-IF "%ERRORLEVEL%"=="0" (
-	SET Server=%mPserver%
-	SET Env=Prod
-)
-
-plink.exe -pw %rpw% %ruser%@%rserver% "ping -c 1 %mKserver% > /dev/null 2>&1"
-IF "%ERRORLEVEL%"=="0" (
-	SET Server=%mKserver%
-	SET Env=Qualif
-)
-
-if "%Server%"=="" (
-	echo Impossible de definir le server TWS !
-	GOTO :END
-)
-
+echo --------------------
+echo Bureau ^= %desk%
 echo Env : %Env%
 echo TWS : %Server%
 
@@ -91,7 +56,7 @@ echo Recuperation des fichiers en cours
 echo    ^=^> Fichier Jobstream
 SET rcmd1=ssh %muser%@%server% 'cd %mdir% ^&^& %composer% create %Fsched% from s=%CPU%#@ ^> /dev/null 2^>^&1'
 
-plink.exe -pw %rpw% %ruser%@%rserver% "%rcmd1%"
+echo y | plink.exe -pw %rpw% %ruser%@%rserver% "%rcmd1%"
 IF NOT "%ERRORLEVEL%"=="0" (
 	echo %CPU% : CPU non trouvee !
 	GOTO :END
@@ -119,6 +84,14 @@ REM CovertFile unix -> dos
 echo    ^=^> CovertFile unix -^> dos
 CALL unix2dos.exe "%desk%\%Fsched%" 
 CALL unix2dos.exe "%desk%\%Fjobs%"
+
+GOTO :END
+
+:USAGE
+ECHO Usage :
+ECHO    %0 [Env] [ CPU ]
+ECHO       [Env] ^= [Qualif^|Prod]
+GOTO :END
 
 :END
 echo --------------------

@@ -28,9 +28,23 @@ my $JFExt				= "_jobs.txt";
 my $docName	 		= "Guilde Rapide d'Utilisation";
 my $docPath 		= "ordinoMaker/doc/UserGuide.doc";
 my $getTwsFile	= 'ordinoMaker\bin\getTWSFile.cmd';
+my $getEnvVPN		= 'ordinoMaker\bin\getEnvVPN.cmd';
 
 open my $fh_setCpu, '>:encoding(cp1252)', "ordinoMaker/tmp/choixcpu.cmd" or die $!;
 opendir (DIR, "./_file_definition") or die $!;
+
+# envVpn()
+# Recupérer l'env VPN : Qualif / Prod / KO
+# global var : 
+# return	(string)
+sub envVpn {
+	my $cr = "error";
+	system($getEnvVPN);
+	if ( $? == 0 	 ) { $cr = "KO" }
+	if ( $? == 256 ) { $cr = "Prod" }
+	if ( $? == 512 ) { $cr = "Qualif" }
+	return("$cr");
+}
 
 
 # Permet l'affichage + selection des CPU
@@ -71,7 +85,7 @@ sub getSelect {
 		print "\n";
 		print "   0 - Consulter le \"" . $docName . "\"\n";
 		print " f/F - Recuperer fic. CPU (sur votre bureau)\n";
-		print " r/R - Refresh\n";
+		print " r/R - Rafraichir\n";
 		print " q/Q - Quit\n";
 		$j = 0 ;
 		--$i;
@@ -90,17 +104,27 @@ sub getSelect {
 		system("CALL \"$docPath\"");
 		getSelect() ; 
 	}
+	
 	if ( "$choix" eq "f" || "$choix" eq "F" ) {
-		print "Quelle CPU ? : ";
+		my $vpn = envVpn();
+		if ( $vpn ne "Prod" && $vpn ne "Qualif") {
+			print " -> VPN : $vpn\n";
+			getSelect() ;
+		}
+		
+		print "(VPN=$vpn) Quelle CPU ? (q/Q) : ";
 		my $cpu = <STDIN>;
 		$cpu = RegExpMain($cpu);
+		$cpu = uc($cpu);
+		
 		if ( $cpu =~ m/\s|\W/ ) {
-			print "$cpu : non incorrect !"
+			print "$cpu : non incorrect !";
+		} elsif ( "$cpu" eq "Q" || "$cpu" eq "q" ) {
 		} else {
-			system("$getTwsFile $cpu");
+			system("$getTwsFile $vpn $cpu");
 		}
-		getSelect() ;
-		print "\n";
+		
+		exit 2;
 	}
 	
 	if ( "$choix" eq "0" ) {
@@ -123,6 +147,7 @@ sub getSelect {
 # Main #
 ########
 print "Launcher v4\n\n";
+
 my ($cpu , $params) = getSelect();
 # ecrit dans le fichier fh_setCpu la CPU
 print {$fh_setCpu} "SET CPU=$cpu\n";
