@@ -49,9 +49,29 @@ sub re_freq {
 }
 sub re_opens {
 	my ($line) = @_ ;
-	$line =~ s/$_// foreach ( '"$', '\?+' );
-	$line = (split(/[\\\/]/, $line))[-1];
-	return("$line");
+	$line =~ s/$_//g foreach ( '"', '\?{6,20}' );
+	my ($path, $spec) = split (/\s\(/, $line);
+	my $return;
+	
+	# path
+	$path = (split(/[\\\/]/, $path))[-1];
+	trim(\$path);
+	
+	# spec
+	if ( $spec ) {
+		$spec =~ s/\)//g;
+		$spec =~ s/\-f \%p//g;
+		trim(\$spec);
+	}
+	
+	# return
+	if ( ! $spec || $spec eq "" ) { 
+		$return = "|$path|";
+	} else {
+		$return = "|$path|($spec)|";
+	}
+	
+	return($return);
 }
 sub re_at {
 	my ($line) = @_ ;
