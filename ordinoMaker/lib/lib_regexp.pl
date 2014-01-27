@@ -63,13 +63,15 @@ sub re_opens {
 		$spec =~ s/\-f \%p//g;
 		trim(\$spec);
 	}
-	
+
 	# return
 	if ( ! $spec || $spec eq "" ) { 
-		$return = "|$path|";
+		$return = "$path";
 	} else {
-		$return = "|$path|($spec)|";
+		$return = "$path ($spec)";
 	}
+	
+	$return =	re_del_noAlpha($return);
 	
 	return($return);
 }
