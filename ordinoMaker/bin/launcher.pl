@@ -46,7 +46,34 @@ sub envVpn {
 	return("$cr");
 }
 
+# get_tws()
+# Recupérer fichier TWS
+# global var : 
+# return	(void)
+sub get_tws {
+		my ($vpn) = shift;
 
+		if ( $vpn ne "Prod" && $vpn ne "Qualif" ) {
+			print " -> VPN : $vpn\n";
+			getSelect() ;
+		}
+		
+		print "(VPN=$vpn) Quelle CPU ? (q/Q) : ";
+		my $cpu = <STDIN>;
+		$cpu = RegExpMain($cpu);
+		$cpu = uc($cpu);
+
+		if ( $cpu =~ m/\s|\W/ || $cpu eq "") {
+			print "$cpu : non incorrect !\n\n";
+			get_tws($vpn);
+		} elsif ( "$cpu" eq "Q" || "$cpu" eq "q" ) {
+		} else {
+			system("$getTwsFile $vpn $cpu");
+		}
+		exit 2;
+}
+
+# getSelect()
 # Permet l'affichage + selection des CPU
 # global var : 
 # return	(string,	string)
@@ -98,41 +125,21 @@ sub getSelect {
 	# Sortie
 	if ( "$choix" eq "Q" || "$choix" eq "q" ) { exit 1 }
 	if ( "$choix" eq "R" || "$choix" eq "r" ) { exit 2 }
-	# Ouverture de $docPath si $choix = 0
+	
+	# $choix = 0 : Ouverture de $docPath
 	if ( "$choix" eq "0" ) {
 		print "Ouverture de : " . $docName ;
 		system("CALL \"$docPath\"");
-		getSelect() ; 
+		getSelect();
 	}
 	
+	# $choix = f/F : Get TWS file
 	if ( "$choix" eq "f" || "$choix" eq "F" ) {
 		my $vpn = envVpn();
-		if ( $vpn ne "Prod" && $vpn ne "Qualif") {
-			print " -> VPN : $vpn\n";
-			getSelect() ;
-		}
-		
-		print "(VPN=$vpn) Quelle CPU ? (q/Q) : ";
-		my $cpu = <STDIN>;
-		$cpu = RegExpMain($cpu);
-		$cpu = uc($cpu);
-		
-		if ( $cpu =~ m/\s|\W/ ) {
-			print "$cpu : non incorrect !";
-		} elsif ( "$cpu" eq "Q" || "$cpu" eq "q" ) {
-		} else {
-			system("$getTwsFile $vpn $cpu");
-		}
-		
-		exit 2;
+		get_tws($vpn);
 	}
 	
-	if ( "$choix" eq "0" ) {
-		print "Ouverture de : " . $docName ;
-		system("CALL \"$docPath\"");		getSelect() ; 
-	}
-	
-	# si choix incorrect
+	# Choix incorrect
 	if ( ! $Hselect{$choix}) { 
 		print " $choix - Choix incorrect";
 		getSelect() ; 

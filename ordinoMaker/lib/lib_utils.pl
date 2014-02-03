@@ -231,7 +231,7 @@ sub makeXlsFile {
 	# Colonne de $worksheet1 => Jobstream Definition
 	my @title = ("JS Name", 
 							"DESCRIPTION", "ON", "EXCEPT", "AT", "EVERY", "FOLLOWS", "NEEDS",
-							"OPENS", "CF", "OUTFILE", "VFOLLOWS", "NEXT", "CLUSTER", "aJOBS");
+							"OPENS", "CF", "OUTFILE", "VFOLLOWS", "NEXT", "CLUSTER", "JOB_INC");
 	
 	# Definition des formats
 	my $format_title = $workbook->add_format(	
