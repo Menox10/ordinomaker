@@ -57,8 +57,10 @@ sub set_links {
 
 		# Follows
 		if ( $Hsched{$sched}{'FOLLOWS'} ) { 
-			foreach ( @{$Hsched{$sched}{'FOLLOWS'}} ) { 
-				push(@{$Hlink{'FOLLOWS'}}, makeLink("$_", "$sched", 0, 0, 0, 0) );
+			foreach ( @{$Hsched{$sched}{'FOLLOWS'}} ) {
+				my ($dep,$job) = split('\.', $_);
+				$job =~ s/@//;
+				push(@{$Hlink{'FOLLOWS'}}, makeLink("$dep", "$sched", 0, 0, 0, "$job") );
 			}
 		}
 		

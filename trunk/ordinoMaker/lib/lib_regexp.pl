@@ -16,12 +16,12 @@ sub regexpSwitcher {
 	my ($keyword, $line) = @_;
 
 	switch ($keyword) {
-		case /^FOLLOWS$/							{ $line =~ s/(.+)\..*$/$1/			 }
-		case /^CARRYFORWARD$/					{	$line = "y"										 }
-		case /^DESCRIPTION$/					{ $line = re_del_noAlpha($line) }
-		case /^ON$|^EXCEPT$/					{	$line = re_freq($line)				 }
-		case /^OPENS?$/								{	$line = re_opens($line)				 }
-		case /^AT$|^UNTIL$|^ONUNTIL$/	{ $line = re_at($line)					 }
+		case /^FOLLOWS$/							{ $line =~ s/(\s\w*)$//;				}
+		case /^CARRYFORWARD$/					{	$line = "y"										}
+		case /^DESCRIPTION$/					{ $line = re_del_noAlpha($line)	}
+		case /^ON$|^EXCEPT$/					{	$line = re_freq($line)				}
+		case /^OPENS?$/								{	$line = re_opens($line)				}
+		case /^AT$|^UNTIL$|^ONUNTIL$/	{ $line = re_at($line)					}
 	}
 
 	if ( $keyword ) { $line =~ s/$keyword\s// }

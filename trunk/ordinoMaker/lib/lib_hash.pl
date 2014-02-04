@@ -154,7 +154,8 @@ sub set_next {
 	for $key ( keys %Hsched ) {
 		if ( $Hsched{$key}{'FOLLOWS'} ) {
 			foreach ( @{$Hsched{$key}{'FOLLOWS'}} ) { 
-				my $sched = uc($_);
+				my ($dep,$job) = split('\.', $_);
+				my $sched = uc($dep);
 				if ( ! $Hsched{$sched} ) { initNode($sched,"Follows"); }
 				push(@{$Hsched{$sched}{'NEXT'}}, $key);
 			}
