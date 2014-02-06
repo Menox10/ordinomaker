@@ -190,7 +190,7 @@ sub setClusterColor {
 # global var : %Hcluster $relation $mainColor $cpuName
 # return	(void) 
 sub writeVgFile {
-	my ($file) = @_;
+	my ($file, $simple) = @_;
 	my $clusterName;
 	
 	my $glabel = "\n\nCrée le ";
@@ -252,6 +252,7 @@ sub writeVgFile {
 	
 	# links
 	for my $key ( keys %Hlink ) {
+		# next if ( $key eq "JFOLLOWS" && $simple );
 		my @t_after = sort_unique_hash(@{$Hlink{$key}});
 		foreach ( @t_after ) { print {$fh_vg} $_ }
 	}

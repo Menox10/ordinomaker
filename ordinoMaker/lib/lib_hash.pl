@@ -86,6 +86,12 @@ sub set_sched {
 			my $every = regexpSwitcher($keyword, "$line");
 			push(@{$Hsched{$sched}{$keyword}}, "$every");
 		}
+		# JFOLLOWS : Si follows et line =~ *#*.*
+		if ( $keyword eq "FOLLOWS" && $line =~ /.*\#.*\..*/) {
+			my $jfollows = regexpSwitcher($keyword, "$line");
+			push(@{$Hsched{$sched}{'JFOLLOWS'}}, "$jfollows");
+		}
+		
 		# push dans Jobs
 		push(@{$Hsched{$sched}{'JOBS'}}, "$line");
 		
@@ -115,7 +121,7 @@ sub set_jobs {
 		# si ligne commance par ^Workstation on saute les deux suivantes
 		if ( $line =~ /^Workstation / ) { $i = 2 ; next ;} 
 		if ( $i != 0 ) { --$i ; next ;}
-		next if ( $line =~ m/^$/ );
+		next if ( $line =~ m/^\s*$/ );
 		
 		# Nom du job courant
 		if ( $line =~ m/^[0-9,a-z,A-Z,_]+\#[0-9,a-z,A-Z]+/)  { 
@@ -160,6 +166,15 @@ sub set_next {
 				push(@{$Hsched{$sched}{'NEXT'}}, $key);
 			}
 		}
+		
+		# if ( $Hsched{$key}{'JFOLLOWS'} ) {
+			# foreach ( @{$Hsched{$key}{'JFOLLOWS'}} ) { 
+				# my ($dep,$job) = split('\.', $_);
+				# my $sched = uc($dep);
+				# if ( ! $Hsched{$sched} ) { initNode($sched,"Jfollows"); }
+				# push(@{$Hsched{$sched}{'NEXT'}}, $key);
+			# }
+		# }
 		
 		# possitionne NEXT pour chaque VFOLLOWS dans %Hsched
 		if ( $Hsched{$key}{'VFOLLOWS'} ) {

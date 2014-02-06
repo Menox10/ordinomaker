@@ -64,6 +64,15 @@ sub set_links {
 			}
 		}
 		
+		# Jfollows
+		# if ( $Hsched{$sched}{'JFOLLOWS'} ) { 
+			# foreach ( @{$Hsched{$sched}{'JFOLLOWS'}} ) {
+				# my ($dep,$job) = split('\.', $_);
+				# $job =~ s/@//;
+				# push(@{$Hlink{'JFOLLOWS'}}, makeLink("$dep", "$sched", 0, "dashed", "blue4", "$job") );
+			# }
+		# }
+		
 		# Vfollows
 		if ( $Hsched{$sched}{'VFOLLOWS'} ) {
 			foreach ( @{$Hsched{$sched}{'VFOLLOWS'}} ) {
@@ -72,7 +81,8 @@ sub set_links {
 		}
 		
 		# Solo
-		if (	! $Hsched{$sched}{'FOLLOWS'} && 
+		# ! $Hsched{$sched}{'JFOLLOWS'} && 
+		if (	! $Hsched{$sched}{'FOLLOWS'} &&
 					! $Hsched{$sched}{'VFOLLOWS'} && 
 					! $Hsched{$sched}{'NEXT'} &&
 					$Hsched{$sched}{'FROM'} =~ /Main|legende/) {
@@ -110,7 +120,7 @@ sub makeLink {
 		if ($arrowhead)	{ $return .= "arrowhead=\"$arrowhead\"," }
 		if ($style) 		{ $return .= "style=\"$style\"," }
 		if ($color)			{ $return .= "color=\"$color\"" }
-		if ($label)			{ $return .= "xlabel=\"$label\" fontsize=7" }
+		if ($label)			{ $return .= "xlabel=\"$label\" fontsize=7 fontcolor=\"white\"" }
 		$return .=  " ]"; 
 	}
 	$return .=  ";\n"; 
