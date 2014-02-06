@@ -16,7 +16,7 @@ sub regexpSwitcher {
 	my ($keyword, $line) = @_;
 
 	switch ($keyword) {
-		case /^FOLLOWS$/							{ $line =~ s/(\s\w*)$//;				}
+		case /^FOLLOWS$/							{ $line =~ s/(\s\w*)$//; $line = uc($line) }
 		case /^CARRYFORWARD$/					{	$line = "y"										}
 		case /^DESCRIPTION$/					{ $line = re_del_noAlpha($line)	}
 		case /^ON$|^EXCEPT$/					{	$line = re_freq($line)				}

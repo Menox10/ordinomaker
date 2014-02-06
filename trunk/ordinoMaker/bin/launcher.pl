@@ -8,6 +8,7 @@
 
 use strict;
 no warnings;
+use File::Copy;
 require("./ordinoMaker/lib/lib_regexp.pl");
 
 open(STDERR,'>/dev/null') or die $! ;
@@ -26,7 +27,8 @@ my @errorName;
 my $choix;
 my $JFExt				= "_jobs.txt";
 my $docName	 		= "Guilde Rapide d'Utilisation";
-my $docPath 		= "ordinoMaker/doc/UserGuide.doc";
+my $docUG				= "ordinoMaker_UserGuide.doc";
+my $docPath 		= "ordinoMaker/doc/$docUG";
 my $getTwsFile	= 'ordinoMaker\bin\getTWSFile.cmd';
 my $getEnvVPN		= 'ordinoMaker\bin\getEnvVPN.cmd';
 
@@ -128,8 +130,10 @@ sub getSelect {
 	
 	# $choix = 0 : Ouverture de $docPath
 	if ( "$choix" eq "0" ) {
-		print "Ouverture de : " . $docName ;
-		system("CALL \"$docPath\"");
+		print "Ouverture de : " . $docUG ;
+		copy("$docPath","$ENV{'Temp'}");
+		system("CALL \"$ENV{'Temp'}/$docUG\"");
+		if ( $? == 256 ) { print "\n => $docUG est deja ouvert\n" }
 		getSelect();
 	}
 	

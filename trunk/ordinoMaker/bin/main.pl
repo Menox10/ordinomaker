@@ -70,7 +70,7 @@ print "\n-> Prise en compte et decoupe du fichier source \"$source_file\"\n";
 my ($key, $cpu, $c_sched);
 my $i = 0;
 while ( my $line = <$fh_source> ) {
-	next if ( $line =~ /^$/ );
+	next if ( $line =~ /^\s*$/ );
 	chomp($line);
 	trim(\$line);
 
@@ -146,16 +146,16 @@ print "\n-> Creation des fichiers .gv :\n";
 
 print "\tsimple   : ${dirName}_simple.gv\n";
 	buildNodes("$dirName", 1, 0);
-	writeVgFile("ordinoMaker/tmp/${dirName}_simple.gv");
+	writeVgFile("ordinoMaker/tmp/${dirName}_simple.gv", 1);
 
 print "\tstandard : $dirName.gv\n";
 	buildNodes("$dirName", 0, 0);
-	writeVgFile("ordinoMaker/tmp/$dirName.gv");
+	writeVgFile("ordinoMaker/tmp/$dirName.gv", 0);
 
 
 print "\tcomplet  : ${dirName}_complet.gv\n";
 	buildNodes("$dirName", 0, 1);
-	writeVgFile("ordinoMaker/tmp/${dirName}_complet.gv");
+	writeVgFile("ordinoMaker/tmp/${dirName}_complet.gv", 0);
 
 # Création du .xls file
 my $log;
