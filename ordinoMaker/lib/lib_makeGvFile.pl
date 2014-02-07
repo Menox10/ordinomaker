@@ -97,7 +97,7 @@ sub buildNodes {
 		
 		# nodeHead
 		my ($nh_shape, $nh_fillcolor);
-		if ( $Hsched{$sched}{'FROM'} eq "Main" ) {
+		if ( $Hsched{$sched}{'FROM'} eq "main" ) {
 			$nh_shape 		= $nh_shape_main			;
 			$nh_fillcolor = $nh_fillcolor_main	;
 		} else {
@@ -123,10 +123,20 @@ sub buildNodes {
 		# node
 		$node  = "\"$sched\""	;
 		$node .= $nodeHead		;
-		$node .= (( -e "_ordinogramme/$dirName/Jobstream/$sched.txt" ) 
-								? " TITLE=\"$sched\" HREF=\"./Jobstream/$sched.txt\" >" 
-								: " >") ;	
-
+	
+		my $title = $sched;
+		if ( $Hsched{$sched}{'DESCRIPTION'} ) {
+			$title = join("$br", @{$Hsched{$sched}{'DESCRIPTION'}});
+		}
+		if ( -e "_ordinogramme/$dirName/Jobstream/$sched.txt") {
+			( my $url = $sched ) =~ s/\#/\%23/;
+			$node .= "TITLE=\"$title\" HREF=\"./Jobstream/$url.txt\"";
+		} else {
+			$node .= "TITLE=\"$title\" HREF=\"\"";
+		}
+		
+		$node .= ">";
+		
 		# node : cell Shed
 		$node .= "\n<tr><td bgcolor=\"";
 		$node .= ( $Hsched{$sched}{'CARRYFORWARD'} ) ? "orangered" : "azure2";
@@ -174,7 +184,9 @@ sub buildNodes {
 sub setClusterColor {
 	my $countColor = 0 ;
 
+	# Pour chaque Cluster
 	for my $cl (sort keys %Hcluster) {
+		# Si _MAIN ou _INFO_
 		if ( $cl eq "_MAIN" || $cl eq "_INFO_" ) {
 			$Hcluster{$cl}{'BGCOLOR'} = $mainColor;
 		} else {

@@ -24,7 +24,7 @@ sub set_link_after {
 				push(@c_after, $after);
 			}
 		}
-		
+
 		@t_after = sort_unique_hash(@c_after);
 		foreach ( @t_after ) { 
 			push(	@{$Hlink{'AFTER'}},
@@ -79,13 +79,13 @@ sub set_links {
 				push(@{$Hlink{'VFOLLOWS'}},	makeLink(	"$_", "$sched", "$vfo_arrowhead", "$vfo_style", "$vfo_color", 0) );
 			}
 		}
-		
+
 		# Solo
 		# ! $Hsched{$sched}{'JFOLLOWS'} && 
 		if (	! $Hsched{$sched}{'FOLLOWS'} &&
 					! $Hsched{$sched}{'VFOLLOWS'} && 
 					! $Hsched{$sched}{'NEXT'} &&
-					$Hsched{$sched}{'FROM'} =~ /Main|legende/) {
+					$Hsched{$sched}{'FROM'} =~ /main/) {
 					
 			if (	( ! $Hcluster{$cl}{'ArnaqueFollows'} ) || 
 						( $Hcluster{$cl}{'count'} >= $maxSoloCol ) ) { 
