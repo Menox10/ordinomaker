@@ -231,7 +231,7 @@ sub makeXlsFile {
 	# Colonne de $worksheet1 => Jobstream Definition
 	my @title = ("JS Name", 
 							"DESCRIPTION", "ON", "EXCEPT", "AT", "EVERY", "FOLLOWS", "JFOLLOWS", "NEEDS",
-							"OPENS", "CF", "OUTFILE", "VFOLLOWS", "NEXT", "CLUSTER", "JOB_INC");
+							"OPENS", "CARRYFORWARD", "OUTFILE", "VFOLLOWS", "NEXT", "CLUSTER", "JOB_INC");
 	
 	# Definition des formats
 	my $format_title = $workbook->add_format(	
@@ -268,7 +268,7 @@ sub makeXlsFile {
 	# Ecriture du contenu de $worksheet1
 	foreach my $key (sort keys %Hsched) {
 		# Next si Jobstream ne provient pas du fichier source
-		next if ( $Hsched{$key}{'FROM'} ne "Main");
+		next if ( $Hsched{$key}{'FROM'} ne "main");
 		
 		$col = 0;
 		++$i;

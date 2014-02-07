@@ -25,11 +25,10 @@ sub initNode {
 sub initLegende {
 	if ( $legend eq "no" ) { return() }
 	
-	my $legende = '_LEGENDE_'	;
+	my $legende = $cpuName	;
 	initNode($legende, "legende");
-	$Hsched{$legende}{'CARRYFORWARD'}	= "Carryforward"		;
+	$Hsched{$legende}{'CARRYFORWARD'}	= "y"		;
 	$Hsched{$legende}{'EVERY'} 				= "Cyclique"				;
-	$Hsched{$legende}{'DESCRIPTION'}	= "Description JS"	;
 	$Hsched{$legende}{'OUTFILE'}			= "Outfile"					;
 	$Hsched{$legende}{'CLUSTER'}			= "_INFO_"					;
 	$Hsched{$legende}{'ON'}						=	"ON"							;
@@ -37,12 +36,8 @@ sub initLegende {
 	$Hsched{$legende}{'AT'}						=	"\@0000-9999 ACT"	;
 	$Hsched{$legende}{'NEEDS'}				=	"NEEDS Token"			;
 	$Hsched{$legende}{'OPENS'}				=	"Open File"				;
-	push(@{$Hsched{$legende}{'JOBS'}}	,	"Jobs (Recovery)");
-
-	my $creation = $cpuName	;
-	initNode($creation,"legende");
-	$Hsched{$creation}{'CLUSTER'}	= "_INFO_"						;
-	$Hsched{$creation}{'CF'}			= "CF"								;
+	push(@{$Hsched{$legende}{'DESCRIPTION'}}, "$cpuName - Description Jobstream");
+	push(@{$Hsched{$legende}{'JOBS'}}				,	"Jobs (Recovery)")					      ;
 }
 
 # set_sched($sched, $line)
@@ -59,7 +54,7 @@ sub set_sched {
 	# initalisation sched from Main
 	if ( $keyword eq "SCHEDULE" ) {
 	 if ( ! $Hsched{$sched} ) {
-		initNode($sched, "Main");
+		initNode($sched, "main");
 			return;
 		} else {
 			croak("\nERROR : $sched Declare plusieurs fois !!!\n");
@@ -74,17 +69,32 @@ sub set_sched {
 	
 	# si partie def. job
 	if ( $Hsched{$sched}{'j_flag'} ) {
-		# recovery
+		# RECOVERY
 		if ( $chk_fjobs && $Hjobs{$line} ) { 
 			push(@{$Hsched{$sched}{'JOB_INC'}}, $line);
 			if ( $Hjobs{$line}{'RECOVERY'} ) {
 				$line = $line . " ($Hjobs{$line}{'RECOVERY'})";
 			}
 		}
-		# Si every
+		# Si EVERY
 		if ( $keyword eq "EVERY" ) {
-			my $every = regexpSwitcher($keyword, "$line");
+			my $every = "(" . regexpSwitcher($keyword, "$line") . ")";
 			push(@{$Hsched{$sched}{$keyword}}, "$every");
+		}
+		# Si OPENS
+		if ( $keyword eq "OPENS" ) {
+			my $opens = "(" . regexpSwitcher($keyword, "$line") . ")";
+			push(@{$Hsched{$sched}{$keyword}}, "$opens");
+		}
+		# Si AT(UNTIL)
+		if ( $keyword eq "AT" ) {
+			my $at = "(" . regexpSwitcher($keyword, "$line") . ")";
+			push(@{$Hsched{$sched}{$keyword}}, "$at");
+		}
+		# Si NEEDS
+		if ( $keyword eq "NEEDS" ) {
+			my $needs = "(" . regexpSwitcher($keyword, "$line") . ")";
+			push(@{$Hsched{$sched}{$keyword}}, "$needs");
 		}
 		# JFOLLOWS : Si follows et line =~ *#*.*
 		if ( $keyword eq "FOLLOWS" && $line =~ /.*\#.*\..*/) {
@@ -142,7 +152,7 @@ sub set_jobs {
 				(my $after = $line ) =~ s/AFTER (.+)/$1/g;
 				$after =~ s/$cpuName#//;
 				$Hjobs{$job}{'AFTER'} = $after;
-				if ( ! $Hsched{$after} ) { initNode($after, "AFTER") }
+				if ( ! $Hsched{$after} ) { initNode($after, "after") }
 			}
 		}
 	}
@@ -162,7 +172,7 @@ sub set_next {
 			foreach ( @{$Hsched{$key}{'FOLLOWS'}} ) { 
 				my ($dep,$job) = split('\.', $_);
 				my $sched = uc($dep);
-				if ( ! $Hsched{$sched} ) { initNode($sched,"Follows"); }
+				if ( ! $Hsched{$sched} ) { initNode($sched,"next_f"); }
 				push(@{$Hsched{$sched}{'NEXT'}}, $key);
 			}
 		}
@@ -171,7 +181,7 @@ sub set_next {
 			# foreach ( @{$Hsched{$key}{'JFOLLOWS'}} ) { 
 				# my ($dep,$job) = split('\.', $_);
 				# my $sched = uc($dep);
-				# if ( ! $Hsched{$sched} ) { initNode($sched,"Jfollows"); }
+				# if ( ! $Hsched{$sched} ) { initNode($sched,"next_jf"); }
 				# push(@{$Hsched{$sched}{'NEXT'}}, $key);
 			# }
 		# }
@@ -180,7 +190,7 @@ sub set_next {
 		if ( $Hsched{$key}{'VFOLLOWS'} ) {
 			foreach ( @{$Hsched{$key}{'VFOLLOWS'}} ) { 
 				my $sched = uc($_);
-				if ( ! $Hsched{$sched} ) { initNode($sched,"vFollows"); }
+				if ( ! $Hsched{$sched} ) { initNode($sched,"next_vf"); }
 				push(@{$Hsched{$sched}{'NEXT'}}, $key);
 			}
 		}
@@ -228,7 +238,7 @@ $ref, $key, $message
 			elsif ( ! $Hsched{$ref} ) { 
 				$message = "Ajout Jobstream" ;
 				write;
-				initNode($ref,"CONF");	
+				initNode($ref, "conf");	
 			}
 			# Si fonction deja defini
 			elsif ( $Hsched{$ref}{$key} ) { 
@@ -275,9 +285,9 @@ $sched, $key
 		}
 	}
 	
-	# Cluster si _MAIN et un seul ON
+	# Cluster AUTO : si _MAIN et un seul ON
 	for $sched ( keys %Hsched ) {
-		if ( $Hsched{$sched}{'FROM'} eq "Main" && $Hsched{$sched}{'CLUSTER'} eq "_MAIN" ) {
+		if ( $Hsched{$sched}{'FROM'} eq "main" && $Hsched{$sched}{'CLUSTER'} eq "_MAIN" ) {
 			if ( $Hsched{$sched}{'ON'} &&	@{$Hsched{$sched}{'ON'}} eq "1" ) {
 				my $cl = $Hsched{$sched}{'ON'}[0];
 				if (	$cl eq "REQUEST" || 
@@ -292,6 +302,13 @@ $sched, $key
 			}
 		}
 	}
+	
+	# for $sched ( keys %Hsched ) {
+		# if ( $sched =~ /\#/ ) {
+			# my $cl = (split(/\#/, $sched))[0];
+			# $Hsched{$sched}{'CLUSTER'} = $cl ; 
+		# }
+	# }
 }
 
 1;

@@ -27,7 +27,6 @@ my $conf_file;
 ($conf_file = $source_file) =~ s/\.txt$/\.conf/;
 ($jobs_file = $source_file) =~ s/\.txt$/\_jobs\.txt/;
 
-
 # FH
 my $fh_source;
 my $fh_sched;
@@ -104,7 +103,10 @@ while ( my $line = <$fh_source> ) {
 			print "\tDetection CPU = \"$cpuName\"\n";
 		}
 		$c_sched = RegExpMain($c_sched);
-		if ( $cpu ne $cpuName ) { print "WAR\t$c_sched def sur cpu : $cpu\n" }
+		if ( $cpu ne $cpuName ) { 
+			print "WAR\t$c_sched def sur cpu : $cpu\n";
+			$c_sched= RegExpMain("$cpu#$c_sched");
+		}
 
 		# open
 		open $fh_sched, '>:encoding(cp1252)', "_ordinogramme/$dirName/Jobstream/$c_sched.txt" or die $!;
@@ -130,10 +132,10 @@ if ( $chk_fconf ) {
 ################################################################################
 # Legende
 initLegende();
-# CLUSTER : Ajout de %Hcluster -> %Hsched
-setCluster();
 # NEXT (l'inverse du (V)FOLLOWS) : dans %Hsched
 set_next();
+# CLUSTER : Ajout de %Hcluster -> %Hsched
+setCluster();
 # Definition couleurs des cluster
 setClusterColor();
 # Creation des relations
@@ -151,7 +153,6 @@ print "\tsimple   : ${dirName}_simple.gv\n";
 print "\tstandard : $dirName.gv\n";
 	buildNodes("$dirName", 0, 0);
 	writeVgFile("ordinoMaker/tmp/$dirName.gv", 0);
-
 
 print "\tcomplet  : ${dirName}_complet.gv\n";
 	buildNodes("$dirName", 0, 1);
