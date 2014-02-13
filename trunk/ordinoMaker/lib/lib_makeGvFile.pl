@@ -153,12 +153,13 @@ sub buildNodes {
 				#																$size						,$b, $align  , $bgcolor
 				case /^EVERY$/			 { @opt = ("$ref_size->[1]" ,1, "center", "yellow"		) }
 				case /^DESCRIPTION$/ { @opt = ("$ref_size->[0]" ,1, "left"	, 0						) }
-				case /^ON$|^EXCEPT$/ { @opt = ("$ref_size->[2]" ,0, "center", 0						) }
+				case /^ON$/					 { @opt = ("$ref_size->[2]" ,1, "center", 0					) }
+				case /^EXCEPT$/			 { @opt = ("$ref_size->[2]" ,0, "center", "bisque4"	) }
 				case /^OPENS?$/			 { @opt = ("$ref_size->[2]" ,0, "left"	, "white:navy")	}
 				case /^AT$/					 { @opt = ("$ref_size->[2]" ,0, "left"	, 0						)	}
 				case /^JOBS$/				 { @opt = ("$ref_size->[2]" ,0, "left"	, 0						) }
 				case /^NEEDS$/			 { @opt = ("$ref_size->[1]" ,1, "center", "orange"		) }
-				case /^OUTFILE$/		 { @opt = ("$ref_size->[2]" ,0, "right"	, "navy:white") }
+				case /^OUTFILE$/		 { @opt = ("$ref_size->[2]" ,0, "right", "navy:white") }
 				else								 { @opt = ("$ref_size->[2]" ,0, "left"	, 0						) }
 			}
 			$node .= setInNode($sched, $_, @opt);
