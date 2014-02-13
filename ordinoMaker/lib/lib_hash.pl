@@ -76,26 +76,13 @@ sub set_sched {
 				$line = $line . " ($Hjobs{$line}{'RECOVERY'})";
 			}
 		}
-		# Si EVERY
-		if ( $keyword eq "EVERY" ) {
+		
+		# Si EVERY || OPENS || AT || NEEDS 
+		if ( $keyword =~ /^EVERY$|^OPENS$|^AT$|^NEEDS$/ ) {
 			my $every = "(" . regexpSwitcher($keyword, "$line") . ")";
 			push(@{$Hsched{$sched}{$keyword}}, "$every");
 		}
-		# Si OPENS
-		if ( $keyword eq "OPENS" ) {
-			my $opens = "(" . regexpSwitcher($keyword, "$line") . ")";
-			push(@{$Hsched{$sched}{$keyword}}, "$opens");
-		}
-		# Si AT(UNTIL)
-		if ( $keyword eq "AT" ) {
-			my $at = "(" . regexpSwitcher($keyword, "$line") . ")";
-			push(@{$Hsched{$sched}{$keyword}}, "$at");
-		}
-		# Si NEEDS
-		if ( $keyword eq "NEEDS" ) {
-			my $needs = "(" . regexpSwitcher($keyword, "$line") . ")";
-			push(@{$Hsched{$sched}{$keyword}}, "$needs");
-		}
+
 		# JFOLLOWS : Si follows et line =~ *#*.*
 		if ( $keyword eq "FOLLOWS" && $line =~ /.*\#.*\..*/) {
 			my $jfollows = regexpSwitcher($keyword, "$line");
