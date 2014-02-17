@@ -9,31 +9,42 @@
 use strict;
 no warnings;
 use File::Copy;
+use File::Find;
+use Archive::Tar;
+use Cwd;
 require("./ordinoMaker/lib/lib_regexp.pl");
+use sigtrap 'handler' => \&myhand, 'INT';
 
 open(STDERR,'>/dev/null') or die $! ;
 
-# Caught control c
-$SIG{INT} = \&interrupt;
-sub interrupt {
-    print STDIN "Caught a control c!\n";
-    exit 2;
-}
-
 # Varibale
-my ($i, $j) = (1, 13);
-my (%Hselect, %Hopt);
-my @errorName;
-my $choix;
-my $JFExt				= "_jobs.txt";
-my $docName	 		= "Guilde Rapide d'Utilisation";
+my ($service, $file);
+my (%Hservice, %Hfiles);
+my @errNameFile;
+
+my $selectFile = $ARGV[0];
+open my $fh_select, '>:encoding(cp1252)', "ordinoMaker/tmp/$selectFile" or die $!;
+
 my $docUG				= "ordinoMaker_UserGuide.doc";
 my $docPath 		= "ordinoMaker/doc/$docUG";
 my $getTwsFile	= 'ordinoMaker\bin\getTWSFile.cmd';
 my $getEnvVPN		= 'ordinoMaker\bin\getEnvVPN.cmd';
 
-open my $fh_setCpu, '>:encoding(cp1252)', "ordinoMaker/tmp/choixcpu.cmd" or die $!;
-opendir (DIR, "./_file_definition") or die $!;
+sub myhand {
+	print "\n caught $SIG{INT} $$ (@_)\n";
+	exit 1;
+}
+
+sub _choix {
+	# use sigtrap 'handler' => \&myhand, 'INT';
+	print "[q]: ";
+	my $choix = <STDIN>;
+	$choix = RegExpMain($choix);
+	# choix
+	if ( "$choix" eq "q" ) { exit 1 }
+	
+	return("$choix");
+}
 
 # envVpn()
 # Recupérer l'env VPN : Qualif / Prod / KO
@@ -42,9 +53,9 @@ opendir (DIR, "./_file_definition") or die $!;
 sub envVpn {
 	my $cr = "error";
 	system($getEnvVPN);
-	if ( $? == 0 	 ) { $cr = "KO" }
-	if ( $? == 256 ) { $cr = "Prod" }
-	if ( $? == 512 ) { $cr = "Qualif" }
+	if ( $? == 0		) { $cr = "KO" }
+	if ( $? == 256	) { $cr = "Prod" }
+	if ( $? == 512	) { $cr = "Qualif" }
 	return("$cr");
 }
 
@@ -60,73 +71,157 @@ sub get_tws {
 			getSelect() ;
 		}
 		
-		print "(VPN=$vpn) Quelle CPU ? (q/Q) : ";
-		my $cpu = <STDIN>;
-		$cpu = RegExpMain($cpu);
-		$cpu = uc($cpu);
+		print "(VPN=$vpn) Quelle CPU ?";
+		my $choix = _choix();
+		my $cpu = uc($choix);
 
 		if ( $cpu =~ m/\s|\W/ || $cpu eq "") {
 			print "$cpu : non incorrect !\n\n";
 			get_tws($vpn);
-		} elsif ( "$cpu" eq "Q" || "$cpu" eq "q" ) {
 		} else {
 			system("$getTwsFile $vpn $cpu");
 		}
-		exit 2;
 }
 
-# getSelect()
-# Permet l'affichage + selection des CPU
-# global var : 
-# return	(string,	string)
-sub getSelect {
-	if ($j) {
-		# Va lire les fichier sous _file_definition
-		while (my $file = readdir(DIR)) {
-			( my $basename = $file ) =~ s/.txt$// ;
-			
-			# n'affiche pas les fichier jobs _jobs.txt
-			if ( $file !~ m/.txt$/ || $file =~ m/${JFExt}$/) { next ;}
-			# Met dans errorName les noms des fichiers incorrects
-			if ( $basename =~ m/\s|\W/ ) { push(@errorName, $file);	next;	}
-			
-			my $k = ( $j - length("$file"));
-			
-			# Affiche : n° et nom de fichier 
-			print " " . ( ( $i<10 ) ? " " . $i : $i ). " - " . $file;
-			print " "x$k;
-			# affiche si fichier jobs ou non 
-			print ( ( -e "_file_definition/$basename$JFExt" ) ? 
-										" (+ fic. jobs)" : " (- fic. jobs)"
-						) ;
-			print "\n";
+sub create_tar {
+	my $dir = shift;
+	my @files;
+	my $dir = "_ordinogramme";
+	my $cpwd = cwd();
+	my $path = $cpwd . "/" . $dir ;
+	chdir($path);
 	
-			# Hselect : n° => file
-			$Hselect{$i} = $file ;
+	print "  Creation de l'archive : $service.tar.gz ...\n";
+	my $tar = Archive::Tar->new();
+	find( sub {	push(@files, $File::Find::name) }, $service	);
+	$tar->add_files( @files );
+	# write a gzip compressed file
+	chdir($cpwd);
+	$tar->write( "$ENV{'Temp'}/$service.tar.gz", COMPRESS_GZIP );
+}
+
+#send_tar ()
+sub send_tar {
+	my $dir = shift;
+	if ( ! -d "_ordinogramme/$dir" ) {
+		print "_ordinogramme/$dir inexistant !";
+		return;
+	}
+	create_tar($dir);
+}
+
+# serice - sub
+sub print_service {
+	my $count = keys %Hservice;
+	my $i;
+	
+	print "Service :\n";
+	
+	for ( $i = 1; $i <= $count; $i++ ) {
+		my 	$n = 1;
+		if ( $i < 10 ) { $n = 2 }
+		print " "x$n . "$i - $Hservice{$i}\n";
+	}
+}
+
+sub build_service {
+	my $i = 1;
+	opendir (DIR_DF, "./_file_definition") or die $!;
+	while (my $dir = readdir(DIR_DF)) {
+		next if ( $dir =~ /^\./ );
+		if ( -d "_file_definition/$dir" ) {
+			$Hservice{$i} = $dir;
 			$i++;
 		}
-		closedir(DIR) or die $!;
+	}
+	closedir(DIR_DF);
+}
+
+sub set_service {
+
+	my $count = shift;
+	
+	print "Merci de choisir votre service [1-$count]";
+	my $choix = _choix();
+
+	if ( ! $Hservice{$choix} ) {
+		print "Choix incorrect\n";
+	}
+	return("$Hservice{$choix}");
+}
+
+
+# files - sub
+sub build_files {
+	my $i = 1;
+	
+	@errNameFile = ();
+	
+	opendir (DIR_S, "./_file_definition/$service") or die $!;
+	
+	while (my $f = readdir(DIR_S)) {
+		( my $basename = $f ) =~ s/.txt$// ;
 		
-		print "\n";
-		foreach (@errorName) {
-			print " x - $_  => Nom incorrect (carc. alphanumerique uniquement)\n";
+		next if ( $f !~ m/.txt$/ || $f =~ m/_jobs.txt$/);
+		if ( $basename =~ m/\s|\W/ ) { 
+			push(@errNameFile, $f);
+			next;
 		}
-		print "\n";
-		print "   0 - Consulter le \"" . $docName . "\"\n";
-		print " f/F - Recuperer fic. CPU (sur votre bureau)\n";
-		print " r/R - Rafraichir\n";
-		print " q/Q - Quit\n";
-		$j = 0 ;
-		--$i;
+
+		$Hfiles{$i}{'FileName'} = $f ;
+		if ( -e "_file_definition/$service/${basename}_jobs.txt" ) {
+			$Hfiles{$i}{'jobFile'} = "+" ;
+		} else {
+			$Hfiles{$i}{'jobFile'} = "-" ;
+		}
+		$i++;
 	}
 	
-	print "\nChoix [0-" . $i . "][f/r/q] : ";
-	$choix = <STDIN>;
-	$choix = RegExpMain($choix);
+	closedir(DIR_S);
+}
+
+sub print_files {
+	my $count = keys %Hfiles;
+	my $i;
+	my $k = 20;
 	
-	# Sortie
-	if ( "$choix" eq "Q" || "$choix" eq "q" ) { exit 1 }
-	if ( "$choix" eq "R" || "$choix" eq "r" ) { exit 2 }
+	print "\n" . "#"x40 ;
+	print "\n"x2;
+	print "Fichier(s) TWS de $service :\n";
+	
+	for ( $i = 1; $i <= $count; $i++ ) {
+		my 	$n = 1;
+		if ( $i < 10 ) { $n = 2 }
+		my $l = ( $k - length("$Hfiles{$i}{'FileName'}"));
+		print " "x$n . "$i - $Hfiles{$i}{'FileName'}" . " "x$l . "($Hfiles{$i}{'jobFile'} fic. jobs)\n";
+	}
+	print "\n";
+	
+	foreach (@errNameFile) {
+			print " x - $_  => Nom incorrect (carc. alphanumerique uniquement)\n";
+	}
+	
+	print "\n";
+	print " 0 - Consulter le \"Guilde Rapide d'Utilisation\"\n";
+	print " f - Recuperer fic. CPU (sur votre bureau)\n";
+	print " r - Rafraichir\n";
+	# if ( $service eq "GA1-MMC" ) {
+		# print " p - Push des ordinos GA1-MMC sur le serveur de ref\n";
+	# }
+}
+
+sub set_files {
+	my $count = shift;
+	
+	print "\nChoix fichier [0-" . $count . "][f][r]";
+	my $choix = _choix();
+	
+	# Rafraichir
+	if ( "$choix" eq "r" ) {
+		build_files();
+		print_files();
+		return;
+	}
 	
 	# $choix = 0 : Ouverture de $docPath
 	if ( "$choix" eq "0" ) {
@@ -134,34 +229,67 @@ sub getSelect {
 		copy("$docPath","$ENV{'Temp'}");
 		system("CALL \"$ENV{'Temp'}/$docUG\"");
 		if ( $? == 256 ) { print "\n => $docUG est deja ouvert\n" }
-		getSelect();
 	}
 	
-	# $choix = f/F : Get TWS file
-	if ( "$choix" eq "f" || "$choix" eq "F" ) {
+	# $choix = f : Get TWS file
+	if ( "$choix" eq "f" ) {
 		my $vpn = envVpn();
 		get_tws($vpn);
+		return;
 	}
+	
+	# if ( "$choix" eq "p" || "$service" eq "GA1-MCC" ) {
+		# my $vpn = envVpn();
+		# if ($vpn ne "Qualif" ) {
+				# print "  Merci de connecter le VPN de Qualif\n";
+		# } else {
+			# send_tar("GA1-MMC");
+		# }
+		# return;
+	# }
 	
 	# Choix incorrect
-	if ( ! $Hselect{$choix}) { 
+	if ( ! $Hfiles{$choix} ) { 
 		print " $choix - Choix incorrect";
-		getSelect() ; 
+		return;
 	}
 	
-	$Hselect{$choix} =~ s/.txt$// ;
-	return("$Hselect{$choix}", "$Hopt{uc($Hselect{$choix})}");
+	$Hfiles{$choix}{'FileName'} =~ s/.txt$//;
+	return("$Hfiles{$choix}{'FileName'}");
 }
-
 
 ########
 # Main #
 ########
-print "Launcher v4\n\n";
+print "ordinoMaker - Launcher v5\n\n";
+print "q - Pour quitter a n'importe quel moment\n\n";
 
-my ($cpu , $params) = getSelect();
-# ecrit dans le fichier fh_setCpu la CPU
-print {$fh_setCpu} "SET CPU=$cpu\n";
+# service
+build_service();
+print_service();
+while ( ! $service ) { 
+	my $count_service = keys %Hservice;
+	$service = set_service($count_service);
+}
 
-close(STDERR) or die $! ;
-close $fh_setCpu or die $! ;;
+# file
+build_files();
+print_files();
+while ( ! $file ) { 
+	my $count_files = keys %Hfiles;
+	$file = set_files($count_files);
+}
+
+# set fichier fh_select
+print {$fh_select} "SET SERVICE=$service\n";
+print {$fh_select} "SET FILE=$file\n";
+
+print "\n";
+print "  SERVICE = $service\n";
+print "  FICHIER = $file\n";
+print "\n";
+
+close $fh_select or die $!;
+close(STDERR) or die $!;
+
+sleep 2;
