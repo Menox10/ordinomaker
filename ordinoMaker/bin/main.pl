@@ -19,7 +19,8 @@ require("./ordinoMaker/lib/lib_utils.pl");
 
 ################################################################################
 # Variables Locale
-my $source_file = $ARGV[0];
+my $service			= $ARGV[0];
+my $source_file	= $ARGV[1];
 my $jobs_file;
 my $dirName;
 my $conf_file;
@@ -40,10 +41,10 @@ our $cpuName;
 ################################################################################
 # UTLIS
 # Controle de l environnement
-checkEnv(	"_file_definition/$source_file",
-					"_file_definition/$jobs_file", 
+checkEnv(	"_file_definition/$service/$source_file",
+					"_file_definition/$service/$jobs_file", 
 					"_conf/$conf_file", 
-					"_ordinogramme/$dirName");
+					"_ordinogramme/$service/$dirName");
 # Chargement fichier parametres
 load_params("./ordinoMaker/etc/ordinoMaker.conf");
 # %Hconvfreq - Initialisation
@@ -53,13 +54,13 @@ setConvertFreq("ordinoMaker/etc/convertFreq.conf");
 # Programme Principal #
 #######################
 # Open File
-open $fh_source, '<:encoding(cp1252)', "_file_definition/$source_file" or die $!;
+open $fh_source, '<:encoding(cp1252)', "_file_definition/$service/$source_file" or die $!;
 ################################################################################
 #  Supp et creation repertorie de travail
-print "-> Suppr & Creation du repertoire : \"$dirName\"\n";
-rmtree("_ordinogramme/$dirName", 0, 1);
+print "-> Suppr & Creation du repertoire : \"_ordinogramme\\$service\\$dirName\"\n";
+rmtree("_ordinogramme/$service/$dirName", 0, 1);
 sleep 1;
-mkpath("_ordinogramme/$dirName/Jobstream",0, 0775 );
+mkpath("_ordinogramme/$service/$dirName/Jobstream",0, 0775 );
 
 ################################################################################
 # Injection fichier source dans %Hsched
@@ -98,7 +99,7 @@ while ( my $line = <$fh_source> ) {
 			# Ecriture des jobs si fichier jobs
 			if ( $chk_fjobs ) {
 				print "   Prise en compte fichier jobs \"$jobs_file\"\n";
-				set_jobs("_file_definition/$jobs_file");
+				set_jobs("_file_definition/$service/$jobs_file");
 			}
 			print "\tDetection CPU = \"$cpuName\"\n";
 		}
@@ -109,7 +110,7 @@ while ( my $line = <$fh_source> ) {
 		}
 
 		# open
-		open $fh_sched, '>:encoding(cp1252)', "_ordinogramme/$dirName/Jobstream/$c_sched.txt" or die $!;
+		open $fh_sched, '>:encoding(cp1252)', "_ordinogramme/$service/$dirName/Jobstream/$c_sched.txt" or die $!;
 	}
 
 	# Ecriture dans le fichier resultat
@@ -147,20 +148,20 @@ set_links();
 print "\n-> Creation des fichiers .gv :\n";
 
 print "\tsimple   : ${dirName}_simple.gv\n";
-	buildNodes("$dirName", 1, 0);
+	buildNodes("$service/$dirName", 1, 0);
 	writeVgFile("ordinoMaker/tmp/${dirName}_simple.gv", 1);
 
 print "\tstandard : $dirName.gv\n";
-	buildNodes("$dirName", 0, 0);
+	buildNodes("$service/$dirName", 0, 0);
 	writeVgFile("ordinoMaker/tmp/$dirName.gv", 0);
 
 print "\tcomplet  : ${dirName}_complet.gv\n";
-	buildNodes("$dirName", 0, 1);
+	buildNodes("$service/$dirName", 0, 1);
 	writeVgFile("ordinoMaker/tmp/${dirName}_complet.gv", 0);
 
 # Création du .xls file
 my $log;
-$log = makeXlsFile("_ordinogramme/$dirName/$dirName.xls", $dirName);
+$log = makeXlsFile("_ordinogramme/$service/$dirName/$dirName.xls", $dirName);
 print "\n-> Creation du fichier $dirName.xls : $log";
 print "\n";
 

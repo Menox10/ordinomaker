@@ -10,8 +10,6 @@ REM
 
 REM mode con: cols=75 lines=75
 
-
-
 REM VARIABLE
 SET mypath=%~dp0
 SET binDir=ordinoMaker\bin
@@ -19,36 +17,38 @@ SET tmpDir=ordinoMaker\tmp
 SET graphviz=%binDir%\graphviz\dev\release\bin
 REM SET perl=%binDir%\perl\perl\bin\perl5.18.0.exe
 SET perl=%binDir%\perl5.8.8\perl\bin\perl5.8.8.exe
+SET selectFile=%username%.cmd
 
 REM ---------------------------------------
 REM choix du fichier - launcher.pl
 cd %mypath:~0,-1%
-del %tmpDir%\choixcpu.cmd > NUL 2> NUL
+
 :LAUNCHER
-%perl% -w %binDir%\launcher.pl
+%perl% -w %binDir%\launcher.pl %selectFile%
 SET CR=%ERRORLEVEL%
 
 IF "%CR%"=="1" (GOTO :END1)
-IF "%CR%"=="2" (GOTO :LAUNCHER)
 IF NOT "%CR%"=="0" (GOTO :END)
 
-CALL "%mypath:~0,-1%"\%tmpDir%\choixcpu.cmd
+CALL "%mypath:~0,-1%"\%tmpDir%\%selectFile%
 
 REM ---------------------------------------
 REM Fichier params.conf
 echo ----------------------------------------
-SET ordinoDir=_ordinogramme\%CPU%
-echo Choix CPU : %CPU%.txt
-echo Repertoire de travail : %mypath:~0,-1%
-echo Repertoire ordinogramme : %ordinoDir%
+SET ordinoDir=_ordinogramme\%SERVICE%\%FILE%
+echo Service           : %SERVICE%
+echo Fichier           : %FILE%
+echo Rep. ordinogramme : %ordinoDir%
+echo Rep. de travail   : %mypath:~0,-1%
+
 
 REM ---------------------------------------
 REM PERL
 echo ----------------------------------------
 echo Execution du script principal
 SET main=%binDir%\main.pl
-echo %perl% -w %main% %CPU%.txt
-%perl% -w %main% %CPU%.txt
+echo %perl% -w %main% %SERVICE% %FILE%.txt
+%perl% -w %main% %SERVICE% %FILE%.txt
 
 IF NOT "%ERRORLEVEL%"=="0" (
 	echo ----------------------------------------
@@ -62,22 +62,21 @@ echo ----------------------------------------
 echo Creation des graphs (dot.exe):
 
 REM standard
-echo   PNG : %CPU%.gv
-"%graphviz%"\dot.exe -Tpng -o %ordinoDir%\%CPU%.png %tmpDir%\%CPU%.gv
+echo   PNG : %FILE%.png
+"%graphviz%"\dot.exe -Tpng -o %ordinoDir%\%FILE%.png %tmpDir%\%FILE%.gv
 
-echo   SVG : %CPU%.gv
-"%graphviz%"\dot.exe -Tsvg -o %ordinoDir%\%CPU%.svg %tmpDir%\%CPU%.gv
-
+echo   SVG : %FILE%.svg
+"%graphviz%"\dot.exe -Tsvg -o %ordinoDir%\%FILE%.svg %tmpDir%\%FILE%.gv
 REM Simple
-echo         %CPU%_simple.gv
-"%graphviz%"\dot.exe -Tsvg -o %ordinoDir%\%CPU%_simple.svg %tmpDir%\%CPU%_simple.gv
-
+echo         %FILE%_simple.svg
+"%graphviz%"\dot.exe -Tsvg -o %ordinoDir%\%FILE%_simple.svg %tmpDir%\%FILE%_simple.gv
 REM Full
-echo         %CPU%_complet.gv
-"%graphviz%"\dot.exe -Tsvg -o %ordinoDir%\%CPU%_complet.svg %tmpDir%\%CPU%_complet.gv
+echo         %FILE%_complet.svg
+"%graphviz%"\dot.exe -Tsvg -o %ordinoDir%\%FILE%_complet.svg %tmpDir%\%FILE%_complet.gv
 
 EXPLORER "%mypath:~0,-1%"\"%ordinoDir%"
 
+echo.
 echo ----------------------------------------
 echo Fin Normale du traitement 
 
