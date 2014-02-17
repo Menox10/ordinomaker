@@ -173,6 +173,7 @@ sub set_service {
 # files - sub
 sub build_files {
 	my $i = 1;
+	foreach my $key (keys %Hfiles) { delete $Hfiles{$key} }
 	
 	@errNameFile = ();
 	
@@ -285,11 +286,15 @@ print "ordinoMaker - Launcher v5\n\n";
 print "q - Pour quitter a n'importe quel moment\n\n";
 
 # service
-build_service();
-print_service();
-while ( ! $service ) { 
-	my $count_service = keys %Hservice;
-	$service = set_service($count_service);
+if ( $ARGV[1] ) { 
+	$service = $ARGV[1] 
+} else {
+	build_service();
+	print_service();
+	while ( ! $service ) { 
+		my $count_service = keys %Hservice;
+		$service = set_service($count_service);
+	}
 }
 
 # file

@@ -24,7 +24,7 @@ REM choix du fichier - launcher.pl
 cd %mypath:~0,-1%
 
 :LAUNCHER
-%perl% -w %binDir%\launcher.pl %selectFile%
+%perl% -w %binDir%\launcher.pl %selectFile% %SERVICE%
 SET CR=%ERRORLEVEL%
 
 IF "%CR%"=="1" (GOTO :END1)
@@ -79,8 +79,8 @@ EXPLORER "%mypath:~0,-1%"\"%ordinoDir%"
 echo.
 echo ----------------------------------------
 echo Fin Normale du traitement 
-
-GOTO :END
+GOTO :LAUNCHER
+REM GOTO :END
 
 :END
 echo ----------------------------------------
