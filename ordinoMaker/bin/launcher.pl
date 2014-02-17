@@ -29,6 +29,7 @@ my $docUG				= "ordinoMaker_UserGuide.doc";
 my $docPath 		= "ordinoMaker/doc/$docUG";
 my $getTwsFile	= 'ordinoMaker\bin\getTWSFile.cmd';
 my $getEnvVPN		= 'ordinoMaker\bin\getEnvVPN.cmd';
+my $sendTarMMC	= 'ordinoMaker\bin\sendTarMMC.cmd';
 
 sub myhand {
 	print "\n caught $SIG{INT} $$ (@_)\n";
@@ -83,21 +84,37 @@ sub get_tws {
 		}
 }
 
+#create_tar ()
 sub create_tar {
-	my $dir = shift;
+	my ($tar_file, $dir) = shift;
 	my @files;
 	my $dir = "_ordinogramme";
 	my $cpwd = cwd();
 	my $path = $cpwd . "/" . $dir ;
+	my %HordinoDir;
 	chdir($path);
 	
-	print "  Creation de l'archive : $service.tar.gz ...\n";
+	print " - Creation de l'archive : $tar_file ...\n";
 	my $tar = Archive::Tar->new();
 	find( sub {	push(@files, $File::Find::name) }, $service	);
 	$tar->add_files( @files );
+	
+	foreach (@files) {
+		my $ordinoDir = (split("/", $_))[1];
+		$HordinoDir{$ordinoDir} = 1;
+	}
+	
+	print " - Liste des repertoires archives:\n";
+	print " "x3;
+	foreach my $key (sort keys %HordinoDir) {
+		next if ($key eq "");
+		print "$key; ";
+	}
+	print "\n";
+	
 	# write a gzip compressed file
 	chdir($cpwd);
-	$tar->write( "$ENV{'Temp'}/$service.tar.gz", COMPRESS_GZIP );
+	$tar->write( "$ENV{'Temp'}/$tar_file", COMPRESS_GZIP );
 }
 
 #send_tar ()
@@ -107,7 +124,9 @@ sub send_tar {
 		print "_ordinogramme/$dir inexistant !";
 		return;
 	}
-	create_tar($dir);
+	create_tar("$service.tar.gz", $dir);
+	print " - Envoie du l'archive $service.tar.gz sur le serveur Ref\n";
+	system("$sendTarMMC $service.tar.gz");
 }
 
 # serice - sub
@@ -205,15 +224,16 @@ sub print_files {
 	print " 0 - Consulter le \"Guilde Rapide d'Utilisation\"\n";
 	print " f - Recuperer fic. CPU (sur votre bureau)\n";
 	print " r - Rafraichir\n";
-	# if ( $service eq "GA1-MMC" ) {
-		# print " p - Push des ordinos GA1-MMC sur le serveur de ref\n";
-	# }
+	if ( $service eq "GA1-MMC" ) {
+		print " p - Push des ordinos GA1-MMC sur le serveur de ref\n";
+	}
 }
 
 sub set_files {
 	my $count = shift;
 	
 	print "\nChoix fichier [0-" . $count . "][f][r]";
+	if ($service eq "GA1-MMC") { print "[p]" }
 	my $choix = _choix();
 	
 	# Rafraichir
@@ -238,15 +258,15 @@ sub set_files {
 		return;
 	}
 	
-	# if ( "$choix" eq "p" || "$service" eq "GA1-MCC" ) {
-		# my $vpn = envVpn();
-		# if ($vpn ne "Qualif" ) {
-				# print "  Merci de connecter le VPN de Qualif\n";
-		# } else {
-			# send_tar("GA1-MMC");
-		# }
-		# return;
-	# }
+	if ( "$choix" eq "p" || "$service" eq "GA1-MCC" ) {
+		my $vpn = envVpn();
+		if ($vpn ne "Qualif" ) {
+				print "  Merci de connecter le VPN de Qualif\n";
+		} else {
+			send_tar("GA1-MMC");
+		}
+		return;
+	}
 	
 	# Choix incorrect
 	if ( ! $Hfiles{$choix} ) { 
