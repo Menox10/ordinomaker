@@ -149,15 +149,15 @@ print "\n-> Creation des fichiers .gv :\n";
 
 print "\tsimple   : ${dirName}_simple.gv\n";
 	buildNodes("$service/$dirName", 1, 0);
-	writeVgFile("ordinoMaker/tmp/${dirName}_simple.gv", 1);
+	writeVgFile("ordinoMaker/tmp/${dirName}_simple.gv", $service, 1);
 
 print "\tstandard : $dirName.gv\n";
 	buildNodes("$service/$dirName", 0, 0);
-	writeVgFile("ordinoMaker/tmp/$dirName.gv", 0);
+	writeVgFile("ordinoMaker/tmp/$dirName.gv", $service, 0);
 
 print "\tcomplet  : ${dirName}_complet.gv\n";
 	buildNodes("$service/$dirName", 0, 1);
-	writeVgFile("ordinoMaker/tmp/${dirName}_complet.gv", 0);
+	writeVgFile("ordinoMaker/tmp/${dirName}_complet.gv", $service, 0);
 
 # Création du .xls file
 my $log;

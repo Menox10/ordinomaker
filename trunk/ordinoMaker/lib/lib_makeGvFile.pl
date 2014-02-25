@@ -19,8 +19,29 @@ sub setInNode {
 	if ( defined($Hsched{$sched}{$param}) ) {
 		my $value = "unknown";
 		my $ref = \$Hsched{$sched}{$param};	
-		
-		if ( ref($$ref) eq "ARRAY" ) { $value = join("$br", @{$Hsched{$sched}{$param}}) }
+
+		if ( ref($$ref) eq "ARRAY" ) { 
+			if ( $param eq "EVERY" || $param eq "AT" ) {
+				my ($n,$m);
+				foreach ( @{$Hsched{$sched}{$param}} ) {
+					if ( $_ !~ /^\(/) {
+						$n .= $_ . " ";
+					} else {
+						$_ =~ s/[\(\)]//g;
+						$m .= $_ . " ";
+					}
+				}
+				if ( $n || $m ) {
+					$value = "";
+					if ( $n ) { trim(\$n) ; $value .= $n . " " }
+					if ( $m ) { trim(\$m) ; $value .= "($m)" }
+					trim(\$value);
+					$value = addBrLine($value, $br, 19);
+				}
+			} else {
+				$value = join("$br", @{$Hsched{$sched}{$param}}) }
+			}
+
 		if ( ref($ref) eq "SCALAR" ) { $value = $Hsched{$sched}{$param}	}
 
 		if ( $param eq "DESCRIPTION" ) { $value = addBrLine($value, $br, $maxline) }
@@ -203,14 +224,14 @@ sub setClusterColor {
 # global var : %Hcluster $relation $mainColor $cpuName
 # return	(void) 
 sub writeVgFile {
-	my ($file, $simple) = @_;
+	my ($file, $service, $simple) = @_;
 	my $clusterName;
 	
 	my $glabel = "\n\nCrée le ";
 		$glabel .= $cDate;
 		$glabel .= " par ";
 		$glabel .= $ENV{"USERNAME"};
-		$glabel .= "\nLBP GA1-CRR(MEE)";
+		$glabel .= "\nLBP $service (MEE©)";
 	
 	# graphHead : gh_
 	my $graphHead  = "digraph {\n"									;

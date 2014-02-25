@@ -175,7 +175,7 @@ sub dumperHash {
 	return($dumper);
 }
 
-# dumperHash(string, string)
+# writeLog(string, string)
 # Ecriture du fichier log - dump des hashs
 # global var : %Hsched %Hjobs %Hcluster $cDate
 # return	(void) 

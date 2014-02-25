@@ -79,7 +79,8 @@ sub re_at {
 	my ($line) = @_ ;
 	$line =~ s/AT /@/;
 	$line =~ s/UNTIL /-/;
-	$line =~ s/ONUNTIL //;
+	$line =~ s/ONUNTIL /#/;
+	$line =~ s/ #/#/;
 	$line =~ s/ -/-/;
 	$line =~ s/^\-/\@0600\-/;
 	return "$line";
@@ -150,8 +151,9 @@ sub addBrLine {
 # return	(void)
 sub trim {
 	my $string = shift;
-	 $$string =~ s/^\s+|\s+$//g;
+	$$string =~ s/^\s+|\s+$//g;
 }
 
 
 1;
+__END__
