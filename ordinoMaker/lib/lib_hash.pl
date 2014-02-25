@@ -33,7 +33,7 @@ sub initLegende {
 	$Hsched{$legende}{'CLUSTER'}			= "_INFO_"					;
 	$Hsched{$legende}{'ON'}						=	"ON"							;
 	$Hsched{$legende}{'EXCEPT'}				=	"EXCEPT"					;
-	$Hsched{$legende}{'AT'}						=	"\@0000-9999 ACT"	;
+	$Hsched{$legende}{'AT'}						=	"\@0000-9999#ACT"	;
 	$Hsched{$legende}{'NEEDS'}				=	"NEEDS Token"			;
 	$Hsched{$legende}{'OPENS'}				=	"Open File"				;
 	push(@{$Hsched{$legende}{'DESCRIPTION'}}, "$cpuName - Description Jobstream");
