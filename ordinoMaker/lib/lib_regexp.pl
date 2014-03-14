@@ -40,7 +40,7 @@ sub RegExpMain {
 } 
 sub re_freq {
 	my ($line) = @_;
-	$line =~ s/$_//g foreach ('RUNCYCLE','RULE[1-9]?','CALENDAR[0-9]?', 'SIMPLE[0-9]?');
+	$line =~ s/$_//g foreach ('RUNCYCLE','\sRULE[0-9]+\s','\sCALENDAR[0-9]+\s', '\sSIMPLE[0-9]+\s');
 	for my $key ( keys %Hconvfreq ) {	$line =~ s/$key/$Hconvfreq{$key}/	}
 	$line =~ s/\s.*\sDESCRIPTION\s\".*\"\s/ /;
 	$line =~ s/\"//g;
