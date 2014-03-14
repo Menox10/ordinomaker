@@ -107,7 +107,6 @@ sub load_params {
 		if ( $key eq "mainColor"	)	{	our $mainColor	= $value 						 }
 		if ( $key eq "br" 				)	{ our $br					= $value 						 }
 		if ( $key eq "maxline"		)	{ our $maxline		= $value 						 }
-		if ( $key eq "legend"			)	{ our $legend			= $value 						 }
 		if ( $key eq "maxSoloCol"	)	{ our $maxSoloCol	= $value 						 }
 		
 		# nodeHead : nh_
@@ -158,6 +157,29 @@ sub load_params {
 	} 
 }
 
+sub load_opt {
+	my ( $global, $service ) = @_;
+	my $key;
+	my $value;
+
+	for ( $global, $service ) {
+		if ( -f $_ ) {
+			open my $fh_opt, '<',  $_ or die $!;
+		
+			while ( <$fh_opt> ) {
+				chomp();	
+				next if ( /^#/ ) ;
+				next if ( /^$/ ) ;
+				
+				($key,$value) = split("=",$_);
+				$Opt{$key} = $value;
+			}
+			
+			close $fh_opt or die $!;
+		}
+	}
+}
+
 # dumperHash(%hash)
 # recupére le dump d'un hash
 # global var : 
@@ -169,9 +191,9 @@ sub dumperHash {
 	$Data::Dumper::Quotekeys	= 0;
 	$Data::Dumper::Sortkeys		= 1;
 	$Data::Dumper::Useqq			= 1;  
-
+	
 	my $dumper = Dumper(\%hash);
-
+	
 	return($dumper);
 }
 
@@ -180,15 +202,18 @@ sub dumperHash {
 # global var : %Hsched %Hjobs %Hcluster $cDate
 # return	(void) 
 sub writeLog {
-	my ($file_log) = @_;
+	my ($file_log, $service) = @_;
 	my $key ;
 	my $dump_hash;
 	
 	open my $fh_log, '>:encoding(utf-8)', $file_log or die $!;
 	
-	print {$fh_log} $cDate  . "\n";
+	print {$fh_log} $service . " (" . $ENV{"USERNAME"} . ")\n" . $cDate . "\n";
 	
 	$dump_hash = dumperHash(%Hsched);
+	$dump_hash =~ s/\"\,\n\s*\"/\"\, \"/g;
+	$dump_hash =~ s/\[\n\s*/\[ /g;
+	$dump_hash =~ s/\n\s*\]/ \]/g;
 	print {$fh_log} "\n\%Hsched\n$dump_hash\n";
 	$dump_hash = dumperHash(%Hjobs);
 	print {$fh_log} "\n\%Hjobs\n$dump_hash\n";
@@ -198,6 +223,8 @@ sub writeLog {
 	print {$fh_log} "\n\%Hlink\n$dump_hash\n";
 	$dump_hash = dumperHash(%Hconvfreq);
 	print {$fh_log} "\n\%Hconvfreq\n$dump_hash\n";
+	$dump_hash = dumperHash(%Opt);
+	print {$fh_log} "\n\%Opt\n$dump_hash\n";
 	
 	close $fh_log or die $!;
 }

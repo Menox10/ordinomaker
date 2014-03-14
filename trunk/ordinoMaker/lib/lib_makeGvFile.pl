@@ -99,8 +99,8 @@ sub buildNodes {
 	my @keywords_con;
 	$linkInfo = "";
 	
-	if ( ! $simple && ! $full ) { @keywords_con = @keywordStd	}
-	if ( $simple ) 							{ @keywords_con = ( @keywordSimple ) }
+	if ( ! $simple && ! $full ) { @keywords_con = (@keywordStd, "OUTFILE") }
+	if ( $simple ) 							{ @keywords_con = ( @keywordSimple) }
 	if ( $full ) 								{ @keywords_con = ( @keywordFull, "OUTFILE", "JOBS") }
 	
 	for my $key ( keys %Hcluster ) {
@@ -176,11 +176,11 @@ sub buildNodes {
 				case /^DESCRIPTION$/ { @opt = ("$ref_size->[0]" ,1, "left"	, 0						) }
 				case /^ON$/					 { @opt = ("$ref_size->[2]" ,1, "center", 0					) }
 				case /^EXCEPT$/			 { @opt = ("$ref_size->[2]" ,0, "center", "bisque4"	) }
-				case /^OPENS?$/			 { @opt = ("$ref_size->[2]" ,0, "left"	, "white:navy")	}
+				case /^OPENS?$/			 { @opt = ("$ref_size->[2]" ,0, "left"	, "white:royalblue")	}
 				case /^AT$/					 { @opt = ("$ref_size->[2]" ,0, "left"	, 0						)	}
 				case /^JOBS$/				 { @opt = ("$ref_size->[2]" ,0, "left"	, 0						) }
 				case /^NEEDS$/			 { @opt = ("$ref_size->[1]" ,1, "center", "orange"		) }
-				case /^OUTFILE$/		 { @opt = ("$ref_size->[2]" ,0, "right", "navy:white") }
+				case /^OUTFILE$/		 { @opt = ("$ref_size->[2]" ,0, "right", "royalblue:white") }
 				else								 { @opt = ("$ref_size->[2]" ,0, "left"	, 0						) }
 			}
 			$node .= setInNode($sched, $_, @opt);
@@ -286,7 +286,7 @@ sub writeVgFile {
 	
 	# links
 	for my $key ( keys %Hlink ) {
-		# next if ( $key eq "JFOLLOWS" && $simple );
+		next if ( $key eq "JFOLLOWS" && ! $Opt{'JFOLLOWS'} );
 		my @t_after = sort_unique_hash(@{$Hlink{$key}});
 		foreach ( @t_after ) { print {$fh_vg} $_ }
 	}

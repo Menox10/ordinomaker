@@ -23,7 +23,7 @@ sub initNode {
 # # var globale : %Hsched $cDate
 # return	(void)
 sub initLegende {
-	if ( $legend eq "no" ) { return() }
+	if ( $Opt{'legend'} eq "no" ) { return() }
 	
 	my $legende = $cpuName	;
 	initNode($legende, "legende");
@@ -164,20 +164,22 @@ sub set_next {
 			}
 		}
 		
-		# if ( $Hsched{$key}{'JFOLLOWS'} ) {
-			# foreach ( @{$Hsched{$key}{'JFOLLOWS'}} ) { 
-				# my ($dep,$job) = split('\.', $_);
-				# my $sched = uc($dep);
-				# if ( ! $Hsched{$sched} ) { initNode($sched,"next_jf"); }
-				# push(@{$Hsched{$sched}{'NEXT'}}, $key);
-			# }
-		# }
+		if ( $Opt{'JFOLLOWS'} ) {
+			if ( $Hsched{$key}{'JFOLLOWS'} ) {
+				foreach ( @{$Hsched{$key}{'JFOLLOWS'}} ) { 
+					my ($dep,$job) = split('\.', $_);
+					my $sched = uc($dep);
+					if ( ! $Hsched{$sched} ) { initNode($sched,"next_jf") }
+					push(@{$Hsched{$sched}{'NEXT'}}, $key);
+				}
+			}
+		}
 		
 		# possitionne NEXT pour chaque VFOLLOWS dans %Hsched
 		if ( $Hsched{$key}{'VFOLLOWS'} ) {
 			foreach ( @{$Hsched{$key}{'VFOLLOWS'}} ) { 
 				my $sched = uc($_);
-				if ( ! $Hsched{$sched} ) { initNode($sched,"next_vf"); }
+				if ( ! $Hsched{$sched} ) { initNode($sched,"next_vf") }
 				push(@{$Hsched{$sched}{'NEXT'}}, $key);
 			}
 		}
