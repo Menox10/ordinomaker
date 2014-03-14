@@ -65,13 +65,13 @@ sub set_links {
 		}
 		
 		# Jfollows
-		# if ( $Hsched{$sched}{'JFOLLOWS'} ) { 
-			# foreach ( @{$Hsched{$sched}{'JFOLLOWS'}} ) {
-				# my ($dep,$job) = split('\.', $_);
-				# $job =~ s/@//;
-				# push(@{$Hlink{'JFOLLOWS'}}, makeLink("$dep", "$sched", 0, "dashed", "blue4", "$job") );
-			# }
-		# }
+		if ( $Hsched{$sched}{'JFOLLOWS'} ) { 
+			foreach ( @{$Hsched{$sched}{'JFOLLOWS'}} ) {
+				my ($dep,$job) = split('\.', $_);
+				$job =~ s/@//;
+				push(@{$Hlink{'JFOLLOWS'}}, makeLink("$dep", "$sched", 0, 0, "blue4", "$job") );
+			}
+		}
 		
 		# Vfollows
 		if ( $Hsched{$sched}{'VFOLLOWS'} ) {
@@ -81,10 +81,10 @@ sub set_links {
 		}
 
 		# Solo
-		# ! $Hsched{$sched}{'JFOLLOWS'} && 
 		if (	! $Hsched{$sched}{'FOLLOWS'} &&
-					! $Hsched{$sched}{'VFOLLOWS'} && 
-					! $Hsched{$sched}{'NEXT'} &&
+					! ( $Hsched{$sched}{'JFOLLOWS'} && $Opt{'JFOLLOWS'} ) && 
+					! $Hsched{$sched}{'VFOLLOWS'} &&
+					! $Hsched{$sched}{'NEXT'} && 
 					$Hsched{$sched}{'FROM'} =~ /main/) {
 					
 			if (	( ! $Hcluster{$cl}{'ArnaqueFollows'} ) || 
@@ -98,6 +98,7 @@ sub set_links {
 						);
 				$Hcluster{$cl}{'ArnaqueFollows'} = $sched;
 				++$Hcluster{$cl}{'count'};
+			
 			}
 		}
 	}

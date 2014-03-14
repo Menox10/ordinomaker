@@ -33,9 +33,9 @@ my $fh_source;
 my $fh_sched;
 
 # Variable Globale
-our ( %Hsched, %Hcluster, %Hjobs, %Hlink, %Hconvfreq, %ENV );
-our ($chk_fjobs, $chk_fconf) = 0;
-our $cDate						= cDate();
+our ( %Hsched, %Hcluster, %Hjobs, %Hlink, %Hconvfreq, %ENV, %Opt );
+our ($chk_fjobs, $chk_fconf ) = 0;
+our $cDate = cDate();
 our $cpuName;
 
 ################################################################################
@@ -45,6 +45,8 @@ checkEnv(	"_file_definition/$service/$source_file",
 					"_file_definition/$service/$jobs_file", 
 					"_conf/$conf_file", 
 					"_ordinogramme/$service/$dirName");
+# Chargement des options : %Opt
+load_opt("./ordinoMaker/etc/options.conf", "./ordinoMaker/etc/$service.conf");
 # Chargement fichier parametres
 load_params("./ordinoMaker/etc/ordinoMaker.conf");
 # %Hconvfreq - Initialisation
@@ -167,5 +169,5 @@ print "\n";
 
 ################################################################################
 # print des HASH dans la log file.log
-writeLog("ordinoMaker/tmp/$dirName.log");	
+writeLog("ordinoMaker/tmp/$dirName.log", $service);	
 
