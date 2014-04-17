@@ -152,8 +152,9 @@ sub load_params {
 		if ( $key eq "vfo_color"		)	{ our $vfo_color			= $value }
 	
 		# cluster : cl_
-		if ( $key eq "cl_labelloc" )	{ our $cl_labelloc = $value }		
-		if ( $key eq "cl_fontsize" )	{ our $cl_fontsize = $value }
+		if ( $key eq "cl_labelloc"			)	{ our $cl_labelloc = $value			}		
+		if ( $key eq "cl_fontsize"			)	{ our $cl_fontsize = $value			}
+		if ( $key eq "cl_auto_bgcolor"	)	{ our $cl_auto_bgcolor = $value	}
 	} 
 }
 
