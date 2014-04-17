@@ -273,7 +273,7 @@ sub writeVgFile {
 		$cl_def .= "labelloc=\"$cl_labelloc\";\n";
 		$cl_def .= "fontsize=$cl_fontsize;\n";
 		if ( ! $Hcluster{$clusterName}{'BGCOLOR'} ) { 
-			$Hcluster{$clusterName}{'BGCOLOR'} = "dimgray";
+			$Hcluster{$clusterName}{'BGCOLOR'} = $cl_auto_bgcolor;
 		}
 		$cl_def .= 'bgcolor="' . $Hcluster{$clusterName}{'BGCOLOR'} . "\";\n";
 		$cl_def .= "$Hcluster{$clusterName}{'NODE'}";
