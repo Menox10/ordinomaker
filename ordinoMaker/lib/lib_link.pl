@@ -116,12 +116,12 @@ sub makeLink {
 	$return .= " -> ";
 	$return .= "\"$dest\"";
 	
-	if ( $arrowhead || $style || $color || $label) {
+	if ( $arrowhead || $style || $color || $label || $fontocolor ) {
 		$return .=  " [ "; 
 		if ($arrowhead)	{ $return .= "arrowhead=\"$arrowhead\"," }
 		if ($style) 		{ $return .= "style=\"$style\"," }
 		if ($color)			{ $return .= "color=\"$color\"" }
-		if ($label)			{ $return .= "xlabel=\"$label\" fontsize=7 fontcolor=\"white\"" }
+		if ($label)			{ $return .= "xlabel=\"$label\" fontsize=7 fontcolor=\"lightskyblue4\"" }
 		$return .=  " ]"; 
 	}
 	$return .=  ";\n"; 
