@@ -15,7 +15,7 @@ use Spreadsheet::WriteExcel;
 # global var : 
 # return	(string) 
 sub cDate {
-	my $date = strftime "%Y%m%dT%H:%M:%S", localtime;
+	my $date = strftime "%Y-%m-%d %H:%M:%S", localtime;
 	# print $date;
 	return($date);
 }

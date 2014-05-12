@@ -13,7 +13,14 @@ use File::Find;
 use Archive::Tar;
 use Cwd;
 require("./ordinoMaker/lib/lib_regexp.pl");
+require("./ordinoMaker/lib/lib_utils.pl");
 use sigtrap 'handler' => \&myhand, 'INT';
+
+# Open file
+my $selectFile = $ARGV[0];
+my $logFile = "ordinoMaker/var/ordinoMaker.log";
+open my $fh_select, '>:encoding(cp1252)', "ordinoMaker/tmp/$selectFile" or die $!;
+open my $fh_log, '>>:encoding(cp1252)', $logFile or warn $!;
 
 open(STDERR,'>/dev/null') or die $! ;
 
@@ -22,9 +29,7 @@ my ($service, $file);
 my (%Hservice, %Hfiles);
 my @errNameFile;
 
-my $selectFile = $ARGV[0];
-open my $fh_select, '>:encoding(cp1252)', "ordinoMaker/tmp/$selectFile" or die $!;
-
+my $user 				= $ENV{'USERNAME'};
 my $docUG				= "ordinoMaker_UserGuide.doc";
 my $docPath 		= "ordinoMaker/doc/$docUG";
 my $getTwsFile	= 'ordinoMaker\bin\getTWSFile.cmd';
@@ -45,6 +50,11 @@ sub _choix {
 	if ( "$choix" eq "q" ) { exit 1 }
 	
 	return("$choix");
+}
+
+sub _log {
+	my $message = shift;
+	print {$fh_log} cDate() . " [" . $service . "] [" . $user . "] : " . $message . "\n";
 }
 
 # envVpn()
@@ -81,6 +91,7 @@ sub get_tws {
 			get_tws($vpn);
 		} else {
 			system("$getTwsFile $vpn $cpu");
+			_log("get TWS File [$vpn] [$cpu]");
 		}
 }
 
@@ -127,6 +138,7 @@ sub send_tar {
 	create_tar("$service.tar.gz", $dir);
 	print " - Envoie du l'archive $service.tar.gz sur le serveur Ref\n";
 	system("$sendTarMMC $service.tar.gz");
+	_log("send tar");
 }
 
 # serice - sub
@@ -248,8 +260,9 @@ sub set_files {
 	if ( "$choix" eq "0" ) {
 		print "Ouverture de : " . $docUG ;
 		copy("$docPath","$ENV{'Temp'}");
-		system("CALL \"$ENV{'Temp'}/$docUG\"");
-		if ( $? == 256 ) { print "\n => $docUG est deja ouvert\n" }
+		system("START Winword.exe /t \"$ENV{'Temp'}/$docUG\"");
+		_log("Open UserGuide");
+		return;
 	}
 	
 	# $choix = f : Get TWS file
@@ -314,7 +327,10 @@ print "  SERVICE = $service\n";
 print "  FICHIER = $file\n";
 print "\n";
 
+_log("Build [$file]");
+
 close $fh_select or die $!;
+close $fh_log or warn $!;
 close(STDERR) or die $!;
 
 sleep 2;
