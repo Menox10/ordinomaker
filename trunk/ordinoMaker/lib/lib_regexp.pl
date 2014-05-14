@@ -77,12 +77,15 @@ sub re_opens {
 }
 sub re_at {
 	my ($line) = @_ ;
-	$line =~ s/AT /@/;
-	$line =~ s/UNTIL /-/;
-	$line =~ s/ONUNTIL /#/;
-	$line =~ s/ #/#/;
-	$line =~ s/ -/-/;
-	$line =~ s/^\-/\@0600\-/;
+	# AT => @
+	$line =~ s/AT\s+/@/;
+	# UNTIL => -
+	$line =~ s/UNTIL\s+/-/;
+	# ONUNTIL => #
+	$line =~ s/ONUNTIL\s+/#/;
+	# Del des espaces avant le UNTIL ou ONUNTIL
+	$line =~ s/\s+#/#/;
+	$line =~ s/\s+-/-/;
 	return "$line";
 }
 sub re_del_noAlpha {
