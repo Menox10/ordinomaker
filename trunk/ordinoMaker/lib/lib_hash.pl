@@ -111,6 +111,7 @@ sub set_jobs {
 	my ($file) = @_ ;
 	my $job ;
 	my $i = 0;
+	my $first = 0;
 	
 	open my $fh_jobs, '<:encoding(cp1252)', $file or die $!;
 	
@@ -119,28 +120,59 @@ sub set_jobs {
 		if ( $line =~ /^Workstation / ) { $i = 2 ; next ;} 
 		if ( $i != 0 ) { --$i ; next ;}
 		next if ( $line =~ m/^\s*$/ );
+		next if ( $line =~ m/^\$JOBS$/ );
 		
 		# Nom du job courant
 		if ( $line =~ m/^[0-9,a-z,A-Z,_]+\#[0-9,a-z,A-Z]+/)  { 
 			$job = RegExpMain("$line");
+			$first = 1;
+		} else {
+			$first = 0;
 		}
 		
 		if ( $job ) {
 			$Hjobs{$job}{'DEF'} .= $line;
 
-			$line = RegExpMain($line);
+			my $lineN = RegExpMain($line);
 			
-			if ($line =~ /^RECOVERY/ ) {
-				(my $recovery = $line ) =~ s/.+ (\w\w\w\w).*/$1/g;
+			if ($lineN =~ /^RECOVERY/ ) {
+				(my $recovery = $lineN ) =~ s/.+ (\w\w\w\w).*/$1/g;
 				$Hjobs{$job}{'RECOVERY'} = $recovery;
+				next;
 			}
-			
-			if ($line =~ /^AFTER/ ) {
-				(my $after = $line ) =~ s/AFTER (.+)/$1/g;
+			if ($lineN =~ /^AFTER/ ) {
+				(my $after = $lineN ) =~ s/AFTER (.+)/$1/g;
 				$after =~ s/$cpuName#//;
 				$Hjobs{$job}{'AFTER'} = $after;
 				if ( ! $Hsched{$after} ) { initNode($after, "after") }
 			}
+			if ($lineN =~ /^STREAMLOGON/ ) {
+				(my $streamlogon = $lineN ) =~ s/STREAMLOGON (.+)/$1/g;
+				$Hjobs{$job}{'STREAMLOGON'} = $streamlogon;
+				next;
+			}
+			if ($lineN =~ /^TASKTYPE/ ) {
+				(my $tt = $lineN ) =~ s/TASKTYPE (.+)/$1/g;
+				$Hjobs{$job}{'TASKTYPE'} = $tt;
+				next;
+			}
+			if ($lineN =~ /^DESCRIPTION/ ) {
+				(my $desc = $lineN ) =~ s/DESCRIPTION (.+)/$1/g;
+				$desc =~ s/^"//;
+				$desc =~ s/"$//;
+				$Hjobs{$job}{'DESCRIPTION'} = $desc;
+				next;
+			}
+			if ($lineN =~ /^SCRIPTNAME|^DOCOMMAND/ ) {
+				my $cmd = $lineN;
+				$cmd =~ s/^SCRIPTNAME (.+)/$1/g;
+				$cmd =~ s/^DOCOMMAND (.+)/$1/g;
+				$cmd =~ s/^"//;
+				$cmd =~ s/"$//;
+				$Hjobs{$job}{'CMD'} = $cmd;
+				next;
+			}
+			if ( $first == 0 ) { $Hjobs{$job}{'OTHER'} .= $line }
 		}
 	}
 	close $fh_jobs or die $!;
