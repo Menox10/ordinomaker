@@ -346,7 +346,12 @@ sub makeXlsFile {
 	# Titre
 	$worksheet2->write(0, 0, "CPU", $format_title);
 	$worksheet2->write(0, 1, "Jobs", $format_title);
-	$worksheet2->write(0, 2, "Definition", $format_title);
+	$worksheet2->write(0, 2, "Desc.", $format_title);
+	$worksheet2->write(0, 3, "Commande", $format_title);
+	$worksheet2->write(0, 4, "Logon", $format_title);
+	$worksheet2->write(0, 5, "Recovery", $format_title);
+	$worksheet2->write(0, 6, "Type", $format_title);
+	$worksheet2->write(0, 7, "Autre", $format_title);
 	
 	# Contenu
 	$i = 1 ;
@@ -354,20 +359,34 @@ sub makeXlsFile {
 		my ($cpu, $job) = split ("#", $key);
 		$worksheet2->write($i, 0, $cpu, $format_key);
 		$worksheet2->write($i, 1, $job, $format_valueMain);
-		my $def = $Hjobs{$key}{'DEF'};
-		chomp($def);
-		$def =~ s/^.*\n//;
+		
+		my $logon = $Hjobs{$key}{'STREAMLOGON'};
+		my $rec = $Hjobs{$key}{'RECOVERY'};
+		my $tt = $Hjobs{$key}{'TASKTYPE'};
+		my $desc = $Hjobs{$key}{'DESCRIPTION'};
+		my $other = $Hjobs{$key}{'OTHER'};
+		my $cmd = $Hjobs{$key}{'CMD'};
+		chomp($other);
+		
 		$format_defJob->set_text_wrap();
-		$worksheet2->write($i, 2, $def, $format_defJob);
+		$worksheet2->write($i, 2, $desc, $format_defJob);
+		$worksheet2->write($i, 3, $cmd, $format_defJob);
+		$worksheet2->write($i, 4, $logon, $format_defJob);
+		$worksheet2->write($i, 5, $rec, $format_defJob);
+		$worksheet2->write($i, 6, $tt, $format_defJob);
+		$worksheet2->write($i, 7, $other, $format_defJob);
+
 		$i++;
 	}
 	
 	# largeur de colonne
-	$worksheet2->set_column(0, 0, 10);
-	$worksheet2->set_column(1, 1, 10);
-	$worksheet2->set_column(2, 2, 80);
+	$worksheet2->set_column(0, 1, 7);
+	$worksheet2->set_column(2, 2, 50);
+	$worksheet2->set_column(3, 3, 60);
+	$worksheet2->set_column(4, 6, 9);
+	$worksheet2->set_column(7, 7, 40);
 	# Fitre automatique
-	$worksheet2->autofilter(0, 0, $i, 2);
+	$worksheet2->autofilter(0, 0, $i, 7);
 	# figer les volets
 	$worksheet2->freeze_panes(1, 1);
 
