@@ -90,7 +90,7 @@ sub re_at {
 }
 sub re_del_noAlpha {
 	my ($return) = @_ ;
-	$return =~ s/$_//g foreach ('&' ,'{' ,'}' ,'\|', '"');
+	$return =~ s/$_//g foreach ('&' ,'{' ,'}' ,'\|', '"', '<', '>');
 	return ("$return");
 }
 
