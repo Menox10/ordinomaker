@@ -310,7 +310,7 @@ sub makeXlsFile {
 											$_ eq "NEXT" ||
 											$_ eq "CLUSTER"
 										) ? $format_valueConf : $format_valueMain;
-			
+
 			if ( $col == 0 ) {
 				$value = $key;
 				$worksheet1->write_url($i, $col, "external:Jobstream/$key.txt", $value, $format_key);
@@ -320,8 +320,13 @@ sub makeXlsFile {
 					if ( $_ eq "ON" ) { $value =~ s/$br/;/g; }
 				} elsif ( ref($ref) eq "SCALAR" ) {
 					$value = $Hsched{$key}{$_};
-				}	
-				$worksheet1->write($i, $col, $value, $cformat);
+				}
+				
+				if ( $value =~ /^[-+\d]/ ) { 
+					$worksheet1->write_string($i, $col, $value, $cformat);
+				} else {
+					$worksheet1->write($i, $col, $value, $cformat);
+				}
 			}
 			my $lenght = length($value);
 			if ( $width[$col] < $lenght ) { $width[$col] = $lenght; }
