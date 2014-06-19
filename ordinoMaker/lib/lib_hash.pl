@@ -268,6 +268,13 @@ $ref, $key, $message
 				next ; 
 			}
 			
+			# Si valeur nulle
+			if ( $value eq "" ) {
+				$message = "Valeur vide, non prise en compte !!!";
+				write;
+				next;
+			}
+			
 			# Ajout final
 			if ( $key eq "INFO" ) {
 				$Hsched{$ref}{$key} = $value ;
