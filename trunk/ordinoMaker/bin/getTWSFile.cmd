@@ -11,22 +11,11 @@ REM
 SET mypath=%~dp0
 SET PATH=%mypath%;%mypath%convertFile\bin\;%PATH%
 
-REM Server Ref
-SET ruser=wasstdp
-SET rpw=wasstdp
-SET rserver=172.26.1.90
-SET rdir=/gw4/gw4adm/tmp
-
-REM Server Master TWS
-SET muser=tws_ga1
-SET mKserver=spu0wa21
-SET mPserver=spu0wa34
-SET mdir=/home/tws_ga1/APPLICATIONS/CRR/Exploit/tmp
+CALL "ordinoMaker/etc/profile.cmd"
 
 REM variable
 SET CPU=%2
 SET Env=%1
-
 
 SET composer=/opt/IBM/TWA/TWS/bin/composer
 SET hostname=/usr/bin/hostname

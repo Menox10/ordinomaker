@@ -1,7 +1,7 @@
 @echo off
 
 REM 
-REM Name: getEnvVPN.cmd
+REM Name: sendTarMMC.cmd
 REM 
 REM SVN Information:
 REM $Revision$
@@ -13,14 +13,9 @@ SET PATH=%mypath%;%PATH%
 
 REM
 SET tarFile=%1
-
 IF "%tarFile%"=="" ( GOTO :USAGE )
 
-REM Server Ref
-SET ruser=wasv32c
-SET rpw=wasv32c
-SET rserver=172.26.1.90
-SET rdir=/data2/v32/v32c/pp/smid/tmp/ordinogramme
+CALL "ordinoMaker/etc/profileMMC.cmd"
 
 REM ############################################################################
 :sendTar

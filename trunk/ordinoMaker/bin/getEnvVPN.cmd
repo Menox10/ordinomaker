@@ -11,14 +11,9 @@ REM
 SET mypath=%~dp0
 SET PATH=%mypath%;%PATH%
 
-REM Server Ref
-SET ruser=wasstdp
-SET rpw=wasstdp
-SET rserver=172.26.1.90
 
-REM Server Master TWS
-SET mKserver=spu0wa21
-SET mPserver=spu0wa34
+CALL "ordinoMaker/etc/profile.cmd"
+
 
 REM ############################################################################
 :getEnv
