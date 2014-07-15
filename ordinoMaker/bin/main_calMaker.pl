@@ -67,7 +67,7 @@ sub envVpn {
 print "-------------------\n";
 print "Controle du VPN\n";
 $vpn = envVpn();
-# $vpn = "Qualif";
+# $vpn = "Prod";
 
 if ( $vpn ne "Prod" && $vpn ne "Qualif" ) {
 	die "Merci de connecter un VPN !\n";
@@ -186,14 +186,22 @@ my $worksheet1 = $workbook->add_worksheet($worksheet);
 # Colonne de $worksheet1 => Jobstream Definition
 
 # Definition des formats
-my $format_title = $workbook->add_format(	
+my $format_tok = $workbook->add_format(	
 	center_across =>	1,
 	size					=>	8,
 	border 				=>	1,
 	color 				=>	'black',
 	bg_color 			=>	'cyan',
 	align 				=>	'vcenter');
-	$format_title->set_rotation(90);
+	$format_tok->set_rotation(90);
+my $format_tko = $workbook->add_format(	
+	center_across =>	1,
+	size					=>	8,
+	border 				=>	1,
+	color 				=>	'black',
+	bg_color 			=>	'red',
+	align 				=>	'vcenter');
+	$format_tko->set_rotation(90);
 my $format_key 	= $workbook->add_format(	
 	border 				=>	1,
 	bg_color 			=>	'yellow',
@@ -204,11 +212,7 @@ my $format_valueMain = $workbook->add_format(
 	border 				=>	1,
 	align 				=>	'vcenter');
 
-# Ecriture des titres de $worksheet1
-$worksheet1->write(0, 0, "CPU", $format_title);  
-foreach my $key ( keys %Hcal ) {
-	$worksheet1->write(0, $Hcal{$key}{'num'}, $key, $format_title);
-}
+
 
 # x
 $i = 1;
@@ -236,24 +240,25 @@ $worksheet1->set_row(0, 80);
 # Fitre automatique
 $worksheet1->autofilter(0, 0, $i, $count);
 
+
+# Ecriture des titres de $worksheet1
 # red si calendrier non utilise
 # et commentaire
-my $format_tko = $workbook->add_format(	
-	center_across =>	1,
-	size					=>	8,
-	border 				=>	1,
-	color 				=>	'black',
-	bg_color 			=>	'red',
-	align 				=>	'vcenter');
-	$format_tko->set_rotation(90);
+$worksheet1->write(0, 0, "CPU", $format_tok);
+
 foreach my $cal ( sort keys %Hcal ) {
 	my $col = $Hcal{$cal}{'num'};
 	my $com = $Hcal{$cal}{'def'};
+	
 	$worksheet1->write_comment(0, $col, $com);
+	
 	if ( $Hcal{$cal} && ( ! $Hcal{$cal}{'usedby'} ) ) {
 		$worksheet1->write(0, $col, $cal, $format_tko);
+	} else {
+		$worksheet1->write(0, $col, $cal, $format_tok);
 	}
 }
+
 # __END__
 
 ################################################################################
